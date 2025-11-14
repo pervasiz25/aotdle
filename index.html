@@ -16,6 +16,7 @@
   --yellow:#c9b458;
   --red:#d22;
 }
+
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
@@ -27,23 +28,28 @@ body{
   justify-content:center;
   padding:28px;
 }
+
 .card{
   width:100%;
   max-width:980px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
   overflow:hidden;
 }
+
 header.top{
   display:flex;
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
+
 .logo {
   width:64px;height:64px;border-radius:8px;
   background:linear-gradient(180deg,#222 0%, #111 100%);
@@ -52,8 +58,16 @@ header.top{
   box-shadow: 0 6px 18px rgba(178,34,34,0.08), inset 0 -6px 14px rgba(0,0,0,0.4);
   border:1px solid rgba(178,34,34,0.06);
 }
+
 h1.title { margin:0; font-family:"Cinzel", serif; font-size:20px; color:#f0d8d8; }
-.controls{ margin-left:auto; display:flex; gap:10px; align-items:center; }
+
+.controls{
+  margin-left:auto;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
 select, input, button{
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   color: #eee;
@@ -63,6 +77,7 @@ select, input, button{
   font-size:14px;
   outline:none;
 }
+
 select{ min-width:150px; }
 input#guessInput { width:280px; }
 button.guess{
@@ -74,12 +89,14 @@ button.guess{
   box-shadow: 0 6px 18px rgba(178,34,34,0.12);
 }
 button.guess:active{ transform:translateY(1px) }
+
 main.content{
   padding:20px;
   display:flex;
   gap:18px;
   align-items:flex-start;
 }
+
 .panel{
   flex:1 1 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
@@ -87,6 +104,7 @@ main.content{
   padding:14px;
   border:1px solid rgba(255,255,255,0.02);
 }
+
 .quote-box{
   margin:10px auto 16px;
   padding:18px;
@@ -102,22 +120,7 @@ main.content{
 }
 .quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
 .quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#333;
-  color:#fff;
-  padding:12px 20px;
-  border-radius:8px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.6);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 0.3s ease;
-  z-index:9999;
-}
-.toast.show{opacity:1; pointer-events:auto;}
+
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
   width:100%;
@@ -135,21 +138,49 @@ table.char-table thead th{
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
   color:#cfcfcf; letter-spacing:0.6px; font-weight:600;
 }
-td.char-cell { background: transparent !important; border: none; width:100px; }
-th.char-head { width:100px; }
-td.green, td.yellow, td.red { color:white; font-weight:600; }
-td.green{ background:var(--green) !important; }
-td.yellow{ background:var(--yellow) !important; }
-td.red{ background:var(--red) !important; }
-td.char-cell img{ width:80px;height:80px; object-fit:cover; border-radius:6px; display:block; margin:0 auto; }
-.quote-img{ width:90px;height:90px; object-fit:cover; border-radius:8px; border:3px solid #fff; display:inline-block; margin:6px; vertical-align:top; }
-#ostPlayer { display:none; margin: 14px auto; width:100%; max-width:500px; }
-#ostGuessContainer { display:none; margin-top:8px; text-align:center; }
-@media (max-width:980px){
-  td.char-cell img{ width:60px;height:60px; }
-  .table-wrap{ max-height:360px; }
-  input#guessInput{ width:160px; }
-  .quote-img{ width:60px;height:60px; }
+td.char-cell img{
+  width:80px;
+  height:80px;
+  object-fit:cover;
+  border-radius:6px;
+  display:block;
+  margin:0 auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  transition: transform .18s ease;
+}
+td.char-cell img:hover{ transform: scale(1.06) }
+
+.quote-img{
+  width:90px;
+  height:90px;
+  object-fit:cover;
+  border-radius:8px;
+  border:3px solid #fff;
+  display:inline-block;
+  margin:6px;
+  vertical-align:top;
+}
+
+#ostContainer { display:none; margin-top:8px; text-align:center; }
+
+#ostContainer iframe{
+  width:100%;
+  max-width:500px;
+  height:80px;
+  border:none;
+}
+
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color:white;
+  padding:12px 24px;
+  border-radius:8px;
+  display:none;
+  z-index:1000;
 }
 </style>
 </head>
@@ -157,9 +188,7 @@ td.char-cell img{ width:80px;height:80px; object-fit:cover; border-radius:6px; d
 <div class="card" role="application">
   <header class="top">
     <div class="logo">AOT</div>
-    <div>
-      <h1 style="margin:0; font-family:Cinzel,serif; font-size:20px; color:#f0d8d8;">Attack on Titandle</h1>
-    </div>
+    <h1 style="margin:0; font-family:Cinzel,serif; font-size:20px; color:#f0d8d8;">Attack on Titandle</h1>
     <div class="controls">
       <select id="modeSelect" onchange="switchMode()">
         <option value="classic">Character Mode</option>
@@ -171,10 +200,13 @@ td.char-cell img{ width:80px;height:80px; object-fit:cover; border-radius:6px; d
       <button class="guess" onclick="makeGuess()">Guess</button>
     </div>
   </header>
+
   <main class="content">
-    <section class="panel" id="charContainer">
-      <div class="table-wrap">
-        <table class="char-table" id="charTable" aria-live="polite">
+    <section class="panel">
+      <div id="quoteBox" class="quote-box"></div>
+
+      <div class="table-wrap" id="charContainer">
+        <table class="char-table" id="charTable">
           <thead>
             <tr>
               <th class="char-head">Character</th>
@@ -185,47 +217,28 @@ td.char-cell img{ width:80px;height:80px; object-fit:cover; border-radius:6px; d
           <tbody></tbody>
         </table>
       </div>
-    </section>
-    <section class="panel" id="quoteContainer" style="display:none;">
-      <div id="quoteBox" class="quote-box"></div>
-    </section>
-    <section class="panel" id="ostContainer" style="display:none;">
-      <div id="ostPlayer">
-        <iframe allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:500px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="" ></iframe>
-      </div>
-      <div id="ostGuessContainer">
-        <input id="ostGuessInput" placeholder="Enter OST name..." />
+
+      <div id="ostContainer">
+        <iframe id="ostIframe" src=""></iframe>
+        <input id="ostGuessInput" placeholder="Enter OST name..." style="margin-top:8px; padding:6px 8px; width:200px;"/>
         <button class="guess" onclick="makeOSTGuess()">Guess</button>
       </div>
+
     </section>
   </main>
 </div>
+
 <div id="toast" class="toast"></div>
 
+<script src="characters.js"></script>
 <script>
-// Karakterler
-const characters = [
-  {name:"Eren Yeager",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Titan Shifter",first_arc:"The Fall of Shiganshina",rank:"Former Cadet",age:19,death_episode:"S4E19",quote:"If you win, you live. If you lose, you die. If you don’t fight, you can’t win!"},
-  {name:"Mikasa Ackerman",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:19,death_episode:"Alive",quote:"This world is cruel... but it’s also very beautiful."},
-  {name:"Armin Arlert",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Titan Shifter",first_arc:"The Fall of Shiganshina",rank:"Commander",age:19,death_episode:"Alive",quote:"When I’m faced with a choice, I always wonder… what kind of person do I want to become?"},
-  {name:"Levi Ackerman",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Female Titan Arc",rank:"Captain",age:30,death_episode:"Alive",quote:"The only thing we’re allowed to do is believe that we won’t regret the choice we made."},
-  {name:"Hange Zoe",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Female Titan Arc",rank:"Commander",age:34,death_episode:"S4E21",quote:"Titans are wonderful! They’re so fascinating!"},
-  {name:"Reiner Braun",gender:"Male",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:21,death_episode:"Alive",quote:"I’m the Armored Titan."},
-  {name:"Annie Leonhart",gender:"Female",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:20,death_episode:"Alive",quote:"You’re weak because you’re strong."},
-  {name:"Bertholdt Hoover",gender:"Male",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:21,death_episode:"S3E17",quote:"It’s us who started this story."},
-  {name:"Jean Kirstein",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:20,death_episode:"Alive",quote:"I don’t have time to worry if it’s right or wrong, you can’t hope for a horror story with a happy ending!"},
-  {name:"Sasha Blouse",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:20,death_episode:"S4E8",quote:"Meat… finally!"}
-];
-
 const datalist = document.getElementById("chars");
-characters.forEach(c=>{
-  const option = document.createElement("option");
-  option.value = c.name;
-  datalist.appendChild(option);
-});
-
-function normalizeName(name){
-  return name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+if(Array.isArray(characters)){
+  characters.forEach(c => {
+    const option = document.createElement("option");
+    option.value = c.name;
+    datalist.appendChild(option);
+  });
 }
 
 let secretQuote = characters[Math.floor(Math.random()*characters.length)];
@@ -233,56 +246,54 @@ let secretChar = characters[Math.floor(Math.random()*characters.length)];
 
 const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
-const ostPlayerDiv = document.getElementById("ostPlayer");
-const ostIframe = ostPlayerDiv.querySelector("iframe");
-const ostGuessContainer = document.getElementById("ostGuessContainer");
+const ostContainer = document.getElementById("ostContainer");
+const ostIframe = document.getElementById("ostIframe");
 const ostGuessInput = document.getElementById("ostGuessInput");
+const toast = document.getElementById("toast");
 
-let mode = "classic";
+let mode="classic";
 let guessedChars = new Set();
 let guessedQuotes = new Set();
-let charSolved = false;
+let charSolved=false;
 
-// OST list (Ritt der Aufklärung kaldırıldı)
+// Spotify OST list
 const ostList = [
   {name:"Vogel im Käfig", url:"https://open.spotify.com/embed/track/1FChhRVx3K9bz0P0fJ3A7I"},
   {name:"Call Your Name", url:"https://open.spotify.com/embed/track/5P3uD5pDnmYJh9k9Rk2nVl"}
 ];
 
-
 let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
 
 function showToast(msg){
-  const toast = document.getElementById("toast");
-  toast.textContent=msg;
-  toast.classList.add("show");
-  setTimeout(()=>{toast.classList.remove("show");},1500);
+  toast.textContent = msg;
+  toast.style.display="block";
+  setTimeout(()=>{toast.style.display="none"},2000);
 }
+
+function normalizeName(str){ return str.toLowerCase().replace(/[^a-z0-9]/g,""); }
 
 function switchMode(){
   mode = document.getElementById("modeSelect").value;
   document.getElementById("guessInput").value="";
   
-  document.getElementById("charContainer").style.display = "none";
-  document.getElementById("quoteContainer").style.display = "none";
-  document.getElementById("ostContainer").style.display = "none";
-  
+  document.getElementById("charContainer").style.display="none";
+  document.getElementById("quoteBox").style.display="none";
+  ostContainer.style.display="none";
+
   if(mode==="quote"){
-    document.getElementById("quoteContainer").style.display="block";
-    quoteBox.style.display = "block";
+    document.getElementById("quoteBox").style.display="block";
     quoteBox.textContent = `"${secretQuote.quote}"`;
   } else if(mode==="ost"){
-    document.getElementById("ostContainer").style.display="block";
+    ostContainer.style.display="block";
     ostIframe.src = currentOST.url;
   } else {
     document.getElementById("charContainer").style.display="block";
   }
 }
 
-
 function colorCell(guessVal, secretVal){
-  if(guessVal === secretVal) return "green";
-  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
+  if(guessVal===secretVal) return "green";
+  if(typeof guessVal==="number" && typeof secretVal==="number" && Math.abs(guessVal-secretVal)<=2) return "yellow";
   return "red";
 }
 
@@ -291,25 +302,19 @@ function makeGuess(){
   if(!guessName) return;
 
   if(mode==="quote"){
-    if(guessedQuotes.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
+    if(guessedQuotes.has(guessName.toLowerCase())){ showToast("Already guessed!"); return; }
     guessedQuotes.add(guessName.toLowerCase());
-    const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
-    quoteBox.classList.remove("green","red","pop");
-    void quoteBox.offsetWidth;
-    if(isCorrect){ quoteBox.classList.add("green","pop"); showToast("Correct!"); }
-    else{ quoteBox.classList.add("red"); showToast("Wrong!"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
-    const img = document.createElement("img");
-    img.src=`images/${normalizeName(guessName)}.png`;
-    img.alt=guessName;
-    img.className="quote-img";
-    img.onerror=()=>{img.style.display='none'};
-    quoteBox.appendChild(img);
+    const isCorrect = guessName.toLowerCase()===secretQuote.name.toLowerCase();
+    quoteBox.classList.remove("green","red");
+    if(isCorrect){ quoteBox.classList.add("green"); showToast("Correct!"); } 
+    else{ quoteBox.classList.add("red"); showToast("Wrong!"); }
   } else if(mode==="classic"){
-    if(charSolved){ showToast("Character already solved!"); document.getElementById("guessInput").value=""; return; }
-    if(guessedChars.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
+    if(charSolved){ showToast("Already solved!"); return; }
+    if(guessedChars.has(guessName.toLowerCase())){ showToast("Already guessed!"); return; }
     guessedChars.add(guessName.toLowerCase());
     const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
-    if(!guess){ showToast("Character not found!"); document.getElementById("guessInput").value=""; return; }
+    if(!guess){ showToast("Character not found!"); return; }
+
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
     attrs.forEach((attr,index)=>{
@@ -324,14 +329,12 @@ function makeGuess(){
       } else if(attr==="first_arc"){
         cell.textContent = guess[attr];
         setTimeout(()=>{
-          const color = colorCell(guess[attr], secretChar[attr]);
-          cell.className = color;
+          cell.className = colorCell(guess[attr], secretChar[attr]);
         }, index*600);
       } else {
         cell.textContent = guess[attr];
         setTimeout(()=>{
-          const color = colorCell(guess[attr], secretChar[attr]);
-          cell.className = color;
+          cell.className = colorCell(guess[attr], secretChar[attr]);
         }, index*600);
       }
       row.appendChild(cell);
@@ -339,14 +342,15 @@ function makeGuess(){
     charTable.appendChild(row);
     if(guess.name.toLowerCase()===secretChar.name.toLowerCase()){ charSolved=true; showToast("Correct character!"); }
   }
+
   document.getElementById("guessInput").value="";
 }
 
 function makeOSTGuess(){
   const val = ostGuessInput.value.trim();
   if(!val) return;
-  if(val.toLowerCase() === currentOST.name.toLowerCase()){ showToast("Correct OST!"); } 
-  else { showToast("Wrong OST!"); }
+  if(val.toLowerCase()===currentOST.name.toLowerCase()){ showToast("Correct OST!"); } 
+  else{ showToast("Wrong OST!"); }
   ostGuessInput.value="";
 }
 
