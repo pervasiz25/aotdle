@@ -245,9 +245,10 @@ let charSolved = false;
 
 // OST list (Ritt der Aufklärung kaldırıldı)
 const ostList = [
-  {name:"Vogel im Käfig", url:"https://music.apple.com/embed/album/1626489475"},
-  {name:"Call Your Name", url:"https://music.apple.com/embed/album/1626489476"}
+  {name:"Vogel im Käfig", url:"https://open.spotify.com/embed/track/1FChhRVx3K9bz0P0fJ3A7I"},
+  {name:"Call Your Name", url:"https://open.spotify.com/embed/track/5P3uD5pDnmYJh9k9Rk2nVl"}
 ];
+
 
 let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
 
@@ -277,6 +278,7 @@ function switchMode(){
     document.getElementById("charContainer").style.display="block";
   }
 }
+
 
 function colorCell(guessVal, secretVal){
   if(guessVal === secretVal) return "green";
@@ -352,6 +354,7 @@ switchMode();
 </script>
 </body>
 </html>
+
 
 
 
