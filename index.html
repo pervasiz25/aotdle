@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Attack on Titandle – LoLdle (Themed)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg-dark:#0b0b0b;
@@ -16,7 +17,6 @@
   --red:#d22;
 }
 
-/* BODY & BACKGROUND */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
@@ -29,7 +29,6 @@ body{
   padding:28px;
 }
 
-/* CARD */
 .card{
   width:100%;
   max-width:980px;
@@ -40,7 +39,6 @@ body{
   overflow:hidden;
 }
 
-/* HEADER */
 header.top{
   display:flex;
   gap:16px;
@@ -49,6 +47,7 @@ header.top{
   background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
+
 .logo {
   width:64px;height:64px;border-radius:8px;
   background:linear-gradient(180deg,#222 0%, #111 100%);
@@ -57,6 +56,7 @@ header.top{
   box-shadow: 0 6px 18px rgba(178,34,34,0.08), inset 0 -6px 14px rgba(0,0,0,0.4);
   border:1px solid rgba(178,34,34,0.06);
 }
+
 h1.title { margin:0; font-family:"Cinzel", serif; font-size:20px; color:#f0d8d8; }
 
 .controls{
@@ -88,13 +88,14 @@ button.guess{
 }
 button.guess:active{ transform:translateY(1px) }
 
-/* MAIN */
 main.content{
   padding:20px;
   display:flex;
   gap:18px;
   align-items:flex-start;
+  flex-direction:column;
 }
+
 .panel{
   flex:1 1 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
@@ -103,7 +104,6 @@ main.content{
   border:1px solid rgba(255,255,255,0.02);
 }
 
-/* QUOTE BOX */
 .quote-box{
   margin:10px auto 16px;
   padding:18px;
@@ -123,7 +123,6 @@ main.content{
 @keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
 .quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
 
-/* TABLE */
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
   width:100%;
@@ -168,15 +167,15 @@ td.char-cell img:hover{ transform: scale(1.06) }
   height:90px;
   object-fit:cover;
   border-radius:8px;
-  border:3px solid;
+  border:3px solid #fff;
   display:inline-block;
   margin:6px;
 }
 
-#ostPlayer{
+.ost-player{
   width:100%;
-  height:50px;
-  margin-top:10px;
+  max-width:720px;
+  margin:16px auto;
 }
 
 @media (max-width:980px){
@@ -198,7 +197,6 @@ td.char-cell img:hover{ transform: scale(1.06) }
     <div class="controls">
       <select id="modeSelect" onchange="switchMode()">
         <option value="classic">Character Mode</option>
-        <option value="quote">Quote Mode</option>
         <option value="ost">OST Mode</option>
       </select>
 
@@ -210,29 +208,33 @@ td.char-cell img:hover{ transform: scale(1.06) }
   </header>
 
   <main class="content">
-    <section class="panel">
-      <div id="quoteBox" class="quote-box"></div>
-      <audio id="ostPlayer" controls></audio>
+    <!-- OST player -->
+    <div id="ostContainer" class="ost-player" style="display:none;">
+      <iframe id="ostPlayer" allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:720px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>
+    </div>
 
-      <div class="table-wrap">
-        <table class="char-table" id="charTable" aria-live="polite">
-          <thead>
-            <tr>
-              <th class="char-head">Character</th>
-              <th>Gender</th><th>Origin</th><th>Group</th><th>Type</th>
-              <th>First Arc</th><th>Rank</th><th>Age</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
+    <!-- Guess box -->
+    <div id="quoteBox" class="quote-box"></div>
+
+    <div class="table-wrap">
+      <table class="char-table" id="charTable" aria-live="polite">
+        <thead>
+          <tr>
+            <th class="char-head">Character</th>
+            <th>Gender</th><th>Origin</th><th>Group</th><th>Type</th>
+            <th>First Arc</th><th>Rank</th><th>Age</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- guesses append here -->
+        </tbody>
+      </table>
+    </div>
   </main>
 </div>
 
 <script src="characters.js"></script>
 <script>
-// populate datalist
 const datalist = document.getElementById("chars");
 if(Array.isArray(characters)){
   characters.forEach(c => {
@@ -242,32 +244,27 @@ if(Array.isArray(characters)){
   });
 }
 
-let secretQuote = characters[Math.floor(Math.random()*characters.length)];
-let secretChar = characters[Math.floor(Math.random()*characters.length)];
 let mode = "classic";
 let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-// OST Mode
-const ostPlayer = document.getElementById("ostPlayer");
-const ostFiles = ["Vogel im Kafig.mp3","The Rumbling.mp3","My War.mp3","Shinzou wo Sasageyo.mp3","Guren no Yumiya.mp3","Jiyuu no Tsubasa.mp3"];
-const playDurations = [2,4,6,10,15,20]; // seconds
-let ostGuessCount = 0;
+const osts = [
+  "https://embed.music.apple.com/tr/album/vogel-im-kafig/1234567890?i=1234567891",
+  "https://embed.music.apple.com/tr/album/the-rumbling/2345678901?i=2345678902",
+  "https://embed.music.apple.com/tr/album/my-war/3456789012?i=3456789013",
+  "https://embed.music.apple.com/tr/album/shinzou-wo-sasageyo/4567890123?i=4567890124",
+  "https://embed.music.apple.com/tr/album/guren-no-yumiya/5678901234?i=5678901235",
+  "https://embed.music.apple.com/tr/album/jiyuu-no-tsubasa/6789012345?i=6789012346"
+];
 
-function playRandomOST(){
-  ostGuessCount = Math.min(ostGuessCount, playDurations.length-1);
-  const idx = Math.floor(Math.random()*ostFiles.length);
-  ostPlayer.src = `ost/${ostFiles[idx]}`;
-  ostPlayer.currentTime = 0;
-  ostPlayer.play();
-  setTimeout(()=>{ ostPlayer.pause(); }, playDurations[ostGuessCount]*1000);
-  ostGuessCount++;
-}
-
-// Quote and Character Mode
 const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
+const ostContainer = document.getElementById("ostContainer");
+const ostPlayer = document.getElementById("ostPlayer");
+
+let secretChar = characters[Math.floor(Math.random() * characters.length)];
+let secretQuote = characters[Math.floor(Math.random() * characters.length)];
 let arcOrder = characters.map(c=>c.first_arc);
 function getArcArrow(arc){
   const secretIdx = arcOrder.indexOf(secretChar.first_arc);
@@ -282,47 +279,36 @@ function switchMode(){
   document.getElementById("guessInput").value = "";
   charSolved=false;
   quoteBox.classList.remove("green","red","pop");
-  if(mode==="quote"){
-    quoteBox.style.display="block";
-    quoteBox.textContent = `"${secretQuote.quote}"`;
-    charTable.parentElement.parentElement.style.display='none';
-    Array.from(document.querySelectorAll(".quote-img")).forEach(img=>img.remove());
-  } else if(mode==="ost"){
-    quoteBox.style.display="none";
-    charTable.parentElement.parentElement.style.display='none';
-    playRandomOST();
-  } else {
-    quoteBox.style.display="none";
-    charTable.parentElement.parentElement.style.display='table';
-  }
-}
 
-function colorCell(guessVal, secretVal){
-  if(guessVal===secretVal) return "green";
-  if(typeof guessVal==="number" && typeof secretVal==="number" && Math.abs(guessVal-secretVal)<=2) return "yellow";
-  return "red";
+  if(mode === "ost"){
+    ostContainer.style.display="block";
+    charTable.parentElement.parentElement.style.display='none';
+    document.getElementById("guessInput").style.display="inline-block";
+    const randomOst = osts[Math.floor(Math.random()*osts.length)];
+    ostPlayer.src = randomOst+"&app=music&itsct=music_box&itscg=30200";
+  } else {
+    ostContainer.style.display="none";
+    charTable.parentElement.parentElement.style.display='table';
+    document.getElementById("guessInput").style.display="inline-block";
+  }
 }
 
 function makeGuess(){
   const guessName = document.getElementById("guessInput").value.trim();
   if(!guessName) return;
 
-  if(mode==="quote"){
+  if(mode === "ost"){
     if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedQuotes.add(guessName.toLowerCase());
-    const isCorrect = guessName.toLowerCase()===secretQuote.name.toLowerCase();
+
+    const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
     quoteBox.classList.remove("green","red","pop");
     void quoteBox.offsetWidth;
     if(isCorrect){ quoteBox.classList.add("green","pop"); }
     else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
-
-    const img = document.createElement("img");
-    img.src=`images/${guessName.toLowerCase()}.png`;
-    img.alt=guessName;
-    img.className="quote-img";
-    img.onerror=()=>{img.style.display='none'};
-    quoteBox.parentElement.insertBefore(img, quoteBox.nextSibling);
-  } else if(mode==="classic"){
+    quoteBox.style.display="block";
+    quoteBox.textContent = guessName;
+  } else {
     if(charSolved){ document.getElementById("guessInput").value=""; return; }
     if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
@@ -333,36 +319,49 @@ function makeGuess(){
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
     attrs.forEach((attr,index)=>{
-      const cell=document.createElement("td");
+      const cell = document.createElement("td");
       if(attr==="name"){
         cell.classList.add("char-cell");
-        const img=document.createElement("img");
+        const img = document.createElement("img");
         img.alt=guess.name;
         img.src=`images/${guess.name.toLowerCase()}.png`;
         img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
       } else if(attr==="first_arc"){
         let arrow = getArcArrow(guess[attr]);
-        cell.textContent = guess[attr]+(arrow? " "+arrow:"");
+        cell.textContent = guess[attr] + (arrow ? " " + arrow : "");
         cell.style.opacity=0;
-        setTimeout(()=>{ cell.className=colorCell(guess[attr],secretChar[attr]); cell.style.opacity=1; }, index*600);
+        setTimeout(()=>{
+          const color = colorCell(guess[attr], secretChar[attr]);
+          cell.className = color;
+          cell.style.opacity=1;
+        }, index*600);
       } else {
         cell.textContent = guess[attr];
         cell.style.opacity=0;
-        setTimeout(()=>{ cell.className=colorCell(guess[attr],secretChar[attr]); cell.style.opacity=1; }, index*600);
+        setTimeout(()=>{
+          const color = colorCell(guess[attr], secretChar[attr]);
+          cell.className = color;
+          cell.style.opacity=1;
+        }, index*600);
       }
       row.appendChild(cell);
     });
+    charTable.insertBefore(row, charTable.firstChild);
 
-    charTable.appendChild(row); // en sona ekleniyor
-    if(guess.name.toLowerCase()===secretChar.name.toLowerCase()) charSolved=true;
+    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
   }
 
   document.getElementById("guessInput").value="";
+}
+
+function colorCell(guessVal, secretVal){
+  if(guessVal === secretVal) return "green";
+  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
+  return "red";
 }
 
 switchMode();
 </script>
 </body>
 </html>
-
