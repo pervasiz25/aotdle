@@ -225,7 +225,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
       </div>
 
       <div id="ostContainer">
-        <iframe id="ostIframe" src=""></iframe>
+        <iframe id="ostIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         <input id="ostGuessInput" placeholder="Enter OST name..." style="margin-top:8px; padding:6px 8px; width:200px;"/>
         <button class="guess" onclick="makeOSTGuess()">Guess</button>
       </div>
@@ -262,10 +262,10 @@ let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved=false;
 
-// Spotify OST list
+// YouTube OST list
 const ostList = [
-  {name:"Vogel im Käfig", url:"https://open.spotify.com/embed/track/1FChhRVx3K9bz0P0fJ3A7I"},
-  {name:"Call Your Name", url:"https://open.spotify.com/embed/track/5P3uD5pDnmYJh9k9Rk2nVl"}
+  {name:"Vogel im Käfig", url:"https://www.youtube.com/embed/VIDEO_ID_1"},
+  {name:"Call Your Name", url:"https://www.youtube.com/embed/VIDEO_ID_2"}
 ];
 
 let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
@@ -366,6 +366,3 @@ switchMode();
 </script>
 </body>
 </html>
-
-
-
