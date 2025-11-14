@@ -16,43 +16,34 @@
   --yellow:#c9b458;
   --red:#d22;
 }
-
-/* ===== BODY & BACKGROUND ===== */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
   background-size: cover;
   color: #eee;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
   display:flex;
   align-items:flex-start;
   justify-content:center;
   padding:28px;
 }
-
 .card{
   width:100%;
   max-width:980px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
   overflow:hidden;
 }
-
 header.top{
   display:flex;
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background:
-    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
-
 .logo {
   width:64px;height:64px;border-radius:8px;
   background:linear-gradient(180deg,#222 0%, #111 100%);
@@ -61,16 +52,8 @@ header.top{
   box-shadow: 0 6px 18px rgba(178,34,34,0.08), inset 0 -6px 14px rgba(0,0,0,0.4);
   border:1px solid rgba(178,34,34,0.06);
 }
-
 h1.title { margin:0; font-family:"Cinzel", serif; font-size:20px; color:#f0d8d8; }
-
-.controls{
-  margin-left:auto;
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
+.controls{ margin-left:auto; display:flex; gap:10px; align-items:center; }
 select, input, button{
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   color: #eee;
@@ -80,7 +63,6 @@ select, input, button{
   font-size:14px;
   outline:none;
 }
-
 select{ min-width:150px; }
 input#guessInput { width:280px; }
 button.guess{
@@ -92,14 +74,12 @@ button.guess{
   box-shadow: 0 6px 18px rgba(178,34,34,0.12);
 }
 button.guess:active{ transform:translateY(1px) }
-
 main.content{
   padding:20px;
   display:flex;
   gap:18px;
   align-items:flex-start;
 }
-
 .panel{
   flex:1 1 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
@@ -107,7 +87,6 @@ main.content{
   padding:14px;
   border:1px solid rgba(255,255,255,0.02);
 }
-
 .quote-box{
   margin:10px auto 16px;
   padding:18px;
@@ -123,10 +102,6 @@ main.content{
 }
 .quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
 .quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
-
-@keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
-.quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
-
 .toast{
   position:fixed;
   bottom:20px;
@@ -142,9 +117,7 @@ main.content{
   transition:opacity 0.3s ease;
   z-index:9999;
 }
-
 .toast.show{opacity:1; pointer-events:auto;}
-
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
   width:100%;
@@ -164,50 +137,14 @@ table.char-table thead th{
 }
 td.char-cell { background: transparent !important; border: none; width:100px; }
 th.char-head { width:100px; }
-
-td.green, td.yellow, td.red { animation: popCell .28s ease forwards; color:white; font-weight:600; }
+td.green, td.yellow, td.red { color:white; font-weight:600; }
 td.green{ background:var(--green) !important; }
 td.yellow{ background:var(--yellow) !important; }
 td.red{ background:var(--red) !important; }
-
-@keyframes popCell { 0%{ transform: scale(.86); opacity:0 } 50%{ transform: scale(1.05); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
-
-td.char-cell img{
-  width:80px;
-  height:80px;
-  object-fit:cover;
-  border-radius:6px;
-  display:block;
-  margin:0 auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
-  transition: transform .18s ease;
-}
-td.char-cell img:hover{ transform: scale(1.06) }
-
-.quote-img{
-  width:90px;
-  height:90px;
-  object-fit:cover;
-  border-radius:8px;
-  border:3px solid #fff;
-  display:inline-block;
-  margin:6px;
-  vertical-align:top;
-}
-
-#ostPlayer {
-  display:none;
-  margin: 14px auto;
-  width:100%;
-  max-width:500px;
-}
-
-#ostGuessContainer {
-  display:none;
-  margin-top:8px;
-  text-align:center;
-}
-
+td.char-cell img{ width:80px;height:80px; object-fit:cover; border-radius:6px; display:block; margin:0 auto; }
+.quote-img{ width:90px;height:90px; object-fit:cover; border-radius:8px; border:3px solid #fff; display:inline-block; margin:6px; vertical-align:top; }
+#ostPlayer { display:none; margin: 14px auto; width:100%; max-width:500px; }
+#ostGuessContainer { display:none; margin-top:8px; text-align:center; }
 @media (max-width:980px){
   td.char-cell img{ width:60px;height:60px; }
   .table-wrap{ max-height:360px; }
@@ -223,21 +160,17 @@ td.char-cell img:hover{ transform: scale(1.06) }
     <div>
       <h1 style="margin:0; font-family:Cinzel,serif; font-size:20px; color:#f0d8d8;">Attack on Titandle</h1>
     </div>
-
     <div class="controls">
       <select id="modeSelect" onchange="switchMode()">
         <option value="classic">Character Mode</option>
         <option value="quote">Quote Mode</option>
         <option value="ost">OST Mode</option>
       </select>
-
       <input id="guessInput" list="chars" placeholder="Enter a character name..." />
       <datalist id="chars"></datalist>
-
       <button class="guess" onclick="makeGuess()">Guess</button>
     </div>
   </header>
-
   <main class="content">
     <section class="panel" id="charContainer">
       <div class="table-wrap">
@@ -249,16 +182,13 @@ td.char-cell img:hover{ transform: scale(1.06) }
               <th>First Arc</th><th>Rank</th><th>Age</th>
             </tr>
           </thead>
-          <tbody>
-          </tbody>
+          <tbody></tbody>
         </table>
       </div>
     </section>
-
     <section class="panel" id="quoteContainer" style="display:none;">
       <div id="quoteBox" class="quote-box"></div>
     </section>
-
     <section class="panel" id="ostContainer" style="display:none;">
       <div id="ostPlayer">
         <iframe allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:500px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="" ></iframe>
@@ -270,7 +200,6 @@ td.char-cell img:hover{ transform: scale(1.06) }
     </section>
   </main>
 </div>
-
 <div id="toast" class="toast"></div>
 
 <script>
@@ -304,7 +233,6 @@ let secretChar = characters[Math.floor(Math.random()*characters.length)];
 
 const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
-
 const ostPlayerDiv = document.getElementById("ostPlayer");
 const ostIframe = ostPlayerDiv.querySelector("iframe");
 const ostGuessContainer = document.getElementById("ostGuessContainer");
@@ -315,11 +243,10 @@ let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-// OST list
+// OST list (Ritt der Aufklärung kaldırıldı)
 const ostList = [
   {name:"Vogel im Käfig", url:"https://music.apple.com/embed/album/1626489475"},
-  {name:"Call Your Name", url:"https://music.apple.com/embed/album/1626489476"},
-  {name:"Ritt der Aufklärung", url:"https://music.apple.com/embed/album/1626489477"}
+  {name:"Call Your Name", url:"https://music.apple.com/embed/album/1626489476"}
 ];
 
 let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
@@ -364,31 +291,25 @@ function makeGuess(){
   if(mode==="quote"){
     if(guessedQuotes.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
     guessedQuotes.add(guessName.toLowerCase());
-
     const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
     quoteBox.classList.remove("green","red","pop");
     void quoteBox.offsetWidth;
     if(isCorrect){ quoteBox.classList.add("green","pop"); showToast("Correct!"); }
     else{ quoteBox.classList.add("red"); showToast("Wrong!"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
-
     const img = document.createElement("img");
     img.src=`images/${normalizeName(guessName)}.png`;
     img.alt=guessName;
     img.className="quote-img";
     img.onerror=()=>{img.style.display='none'};
-
     quoteBox.appendChild(img);
   } else if(mode==="classic"){
     if(charSolved){ showToast("Character already solved!"); document.getElementById("guessInput").value=""; return; }
     if(guessedChars.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
-
     const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
     if(!guess){ showToast("Character not found!"); document.getElementById("guessInput").value=""; return; }
-
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
-
     attrs.forEach((attr,index)=>{
       const cell = document.createElement("td");
       if(attr==="name"){
@@ -413,11 +334,9 @@ function makeGuess(){
       }
       row.appendChild(cell);
     });
-
     charTable.appendChild(row);
     if(guess.name.toLowerCase()===secretChar.name.toLowerCase()){ charSolved=true; showToast("Correct character!"); }
   }
-
   document.getElementById("guessInput").value="";
 }
 
