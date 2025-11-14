@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Attack on Titandle – LoLdle (Themed)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-dark:#0b0b0b;
+  --panel:#131313;
+  --accent:#b22;
+  --muted:#9aa0a6;
+  --green: #6aaa64;
+  --yellow:#c9b458;
+  --red:#d22;
+}
+
+/* BODY & BACKGROUND */
+html,body{height:100%;margin:0;}
+body{
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #eee;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px;
+}
+
+/* CARD */
+.card{
+  width:100%;
+  max-width:980px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  border-radius:12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.03);
+  overflow:hidden;
+}
+
+/* HEADER */
+header.top{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  padding:18px 22px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  border-bottom:1px solid rgba(255,255,255,0.02);
+}
+.logo {
+  width:64px;height:64px;border-radius:8px;
+  background:linear-gradient(180deg,#222 0%, #111 100%);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--accent); font-family:"Cinzel", serif; font-weight:700;
+  box-shadow: 0 6px 18px rgba(178,34,34,0.08), inset 0 -6px 14px rgba(0,0,0,0.4);
+  border:1px solid rgba(178,34,34,0.06);
+}
+h1.title { margin:0; font-family:"Cinzel", serif; font-size:20px; color:#f0d8d8; }
+
+.controls{
+  margin-left:auto;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+select, input, button{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  color: #eee;
+  border:1px solid rgba(255,255,255,0.03);
+  padding:8px 10px;
+  border-radius:8px;
+  font-size:14px;
+  outline:none;
+}
+
+select{ min-width:150px; }
+input#guessInput { width:280px; }
+button.guess{
+  background: linear-gradient(180deg, #b22, #8a1a1a);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: white;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow: 0 6px 18px rgba(178,34,34,0.12);
+}
+button.guess:active{ transform:translateY(1px) }
+
+/* MAIN */
+main.content{
+  padding:20px;
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+}
+.panel{
+  flex:1 1 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
+  border-radius:10px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,0.02);
+}
+
+/* QUOTE BOX */
+.quote-box{
+  margin:10px auto 16px;
+  padding:18px;
+  max-width:760px;
+  min-height:68px;
+  background: linear-gradient(180deg, rgba(20,20,20,0.8), rgba(10,10,10,0.6));
+  border-left:6px solid rgba(178,34,34,0.9);
+  border-radius:8px;
+  color:#ddd;
+  font-style:italic;
+  display:none;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
+.quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
+
+@keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
+.quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
+
+/* TABLE */
+.table-wrap{ overflow:auto; max-height:480px; padding:6px; }
+table.char-table{
+  width:100%;
+  border-collapse:collapse;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+  border-radius:8px;
+  min-width:900px;
+}
+table.char-table th, table.char-table td{
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  padding:12px 10px; text-align:center; color:#ddd;
+  font-size:13px;
+}
+table.char-table thead th{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  color:#cfcfcf; letter-spacing:0.6px; font-weight:600;
+}
+td.char-cell { background: transparent !important; border: none; width:100px; }
+th.char-head { width:100px; }
+
+td.green, td.yellow, td.red { animation: popCell .28s ease forwards; color:white; font-weight:600; }
+td.green{ background:var(--green) !important; }
+td.yellow{ background:var(--yellow) !important; }
+td.red{ background:var(--red) !important; }
+
+@keyframes popCell { 0%{ transform: scale(.86); opacity:0 } 50%{ transform: scale(1.05); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
+
+td.char-cell img{
+  width:80px;
+  height:80px;
+  object-fit:cover;
+  border-radius:6px;
+  display:block;
+  margin:0 auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  transition: transform .18s ease;
+}
+td.char-cell img:hover{ transform: scale(1.06) }
+
+.quote-img{
+  width:90px;
+  height:90px;
+  object-fit:cover;
+  border-radius:8px;
+  border:3px solid;
+  display:inline-block;
+  margin:6px;
+}
+
+#ostPlayer{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+}
+
+@media (max-width:980px){
+  td.char-cell img{ width:60px;height:60px; }
+  .table-wrap{ max-height:360px; }
+  input#guessInput{ width:160px; }
+  .quote-img{ width:60px;height:60px; }
+}
+</style>
+</head>
+<body>
+<div class="card" role="application">
+  <header class="top">
+    <div class="logo">AOT</div>
+    <div>
+      <h1 style="margin:0; font-family:Cinzel,serif; font-size:20px; color:#f0d8d8;">Attack on Titandle</h1>
+    </div>
+
+    <div class="controls">
+      <select id="modeSelect" onchange="switchMode()">
+        <option value="classic">Character Mode</option>
+        <option value="quote">Quote Mode</option>
+        <option value="ost">OST Mode</option>
+      </select>
+
+      <input id="guessInput" list="chars" placeholder="Enter a character name..." />
+      <datalist id="chars"></datalist>
+
+      <button class="guess" onclick="makeGuess()">Guess</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="panel">
+      <div id="quoteBox" class="quote-box"></div>
+      <audio id="ostPlayer" controls></audio>
+
+      <div class="table-wrap">
+        <table class="char-table" id="charTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th class="char-head">Character</th>
+              <th>Gender</th><th>Origin</th><th>Group</th><th>Type</th>
+              <th>First Arc</th><th>Rank</th><th>Age</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="characters.js"></script>
+<script>
+// populate datalist
+const datalist = document.getElementById("chars");
+if(Array.isArray(characters)){
+  characters.forEach(c => {
+    const option = document.createElement("option");
+    option.value = c.name;
+    datalist.appendChild(option);
+  });
+}
+
+let secretQuote = characters[Math.floor(Math.random()*characters.length)];
+let secretChar = characters[Math.floor(Math.random()*characters.length)];
+let mode = "classic";
+let guessedChars = new Set();
+let guessedQuotes = new Set();
+let charSolved = false;
+
+// OST Mode
+const ostPlayer = document.getElementById("ostPlayer");
+const ostFiles = ["Vogel im Kafig.mp3","The Rumbling.mp3","My War.mp3","Shinzou wo Sasageyo.mp3","Guren no Yumiya.mp3","Jiyuu no Tsubasa.mp3"];
+const playDurations = [2,4,6,10,15,20]; // seconds
+let ostGuessCount = 0;
+
+function playRandomOST(){
+  ostGuessCount = Math.min(ostGuessCount, playDurations.length-1);
+  const idx = Math.floor(Math.random()*ostFiles.length);
+  ostPlayer.src = `ost/${ostFiles[idx]}`;
+  ostPlayer.currentTime = 0;
+  ostPlayer.play();
+  setTimeout(()=>{ ostPlayer.pause(); }, playDurations[ostGuessCount]*1000);
+  ostGuessCount++;
+}
+
+// Quote and Character Mode
+const quoteBox = document.getElementById("quoteBox");
+const charTable = document.getElementById("charTable").querySelector("tbody");
+let arcOrder = characters.map(c=>c.first_arc);
+function getArcArrow(arc){
+  const secretIdx = arcOrder.indexOf(secretChar.first_arc);
+  const guessIdx = arcOrder.indexOf(arc);
+  if(guessIdx < secretIdx) return "↑";
+  if(guessIdx > secretIdx) return "↓";
+  return "";
+}
+
+function switchMode(){
+  mode = document.getElementById("modeSelect").value;
+  document.getElementById("guessInput").value = "";
+  charSolved=false;
+  quoteBox.classList.remove("green","red","pop");
+  if(mode==="quote"){
+    quoteBox.style.display="block";
+    quoteBox.textContent = `"${secretQuote.quote}"`;
+    charTable.parentElement.parentElement.style.display='none';
+    Array.from(document.querySelectorAll(".quote-img")).forEach(img=>img.remove());
+  } else if(mode==="ost"){
+    quoteBox.style.display="none";
+    charTable.parentElement.parentElement.style.display='none';
+    playRandomOST();
+  } else {
+    quoteBox.style.display="none";
+    charTable.parentElement.parentElement.style.display='table';
+  }
+}
+
+function colorCell(guessVal, secretVal){
+  if(guessVal===secretVal) return "green";
+  if(typeof guessVal==="number" && typeof secretVal==="number" && Math.abs(guessVal-secretVal)<=2) return "yellow";
+  return "red";
+}
+
+function makeGuess(){
+  const guessName = document.getElementById("guessInput").value.trim();
+  if(!guessName) return;
+
+  if(mode==="quote"){
+    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+    guessedQuotes.add(guessName.toLowerCase());
+    const isCorrect = guessName.toLowerCase()===secretQuote.name.toLowerCase();
+    quoteBox.classList.remove("green","red","pop");
+    void quoteBox.offsetWidth;
+    if(isCorrect){ quoteBox.classList.add("green","pop"); }
+    else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
+
+    const img = document.createElement("img");
+    img.src=`images/${guessName.toLowerCase()}.png`;
+    img.alt=guessName;
+    img.className="quote-img";
+    img.onerror=()=>{img.style.display='none'};
+    quoteBox.parentElement.insertBefore(img, quoteBox.nextSibling);
+  } else if(mode==="classic"){
+    if(charSolved){ document.getElementById("guessInput").value=""; return; }
+    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+    guessedChars.add(guessName.toLowerCase());
+
+    const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
+    if(!guess){ document.getElementById("guessInput").value=""; return; }
+
+    const row = document.createElement("tr");
+    const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
+    attrs.forEach((attr,index)=>{
+      const cell=document.createElement("td");
+      if(attr==="name"){
+        cell.classList.add("char-cell");
+        const img=document.createElement("img");
+        img.alt=guess.name;
+        img.src=`images/${guess.name.toLowerCase()}.png`;
+        img.onerror=()=>{img.style.display='none'};
+        cell.appendChild(img);
+      } else if(attr==="first_arc"){
+        let arrow = getArcArrow(guess[attr]);
+        cell.textContent = guess[attr]+(arrow? " "+arrow:"");
+        cell.style.opacity=0;
+        setTimeout(()=>{ cell.className=colorCell(guess[attr],secretChar[attr]); cell.style.opacity=1; }, index*600);
+      } else {
+        cell.textContent = guess[attr];
+        cell.style.opacity=0;
+        setTimeout(()=>{ cell.className=colorCell(guess[attr],secretChar[attr]); cell.style.opacity=1; }, index*600);
+      }
+      row.appendChild(cell);
+    });
+
+    charTable.appendChild(row); // en sona ekleniyor
+    if(guess.name.toLowerCase()===secretChar.name.toLowerCase()) charSolved=true;
+  }
+
+  document.getElementById("guessInput").value="";
+}
+
+switchMode();
+</script>
+</body>
+</html>
