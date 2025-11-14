@@ -261,8 +261,7 @@ let secretChar = characters[Math.floor(Math.random() * characters.length)];
 
 const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
-const ostContainer = document.getElementById("ostContainer");
-const ostGuessInput = document.getElementById("ostGuessInput");
+
 const toast = document.getElementById("toast");
 const hiddenYTPlayerDiv = document.getElementById("hiddenYTPlayer");
 
@@ -271,25 +270,7 @@ let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-const ostList = [
-  { name:"Vogel im Käfig", id:"9ZyL1O_z7wM" },
-  { name:"Call Your Name", id:"HVAgYp3GsjA" },
-  { name:"YouSeeBIGGIRL", id:"AQ2K7kY_Iec" },
-  { name:"ətˈæk 0N tάɪtn", id:"-rQmYaQjF7E" }
-];
-let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
-let ytPlayer;
 
-function onYouTubeIframeAPIReady(){ }
-
-function playHiddenYouTube(videoId){
-  if(ytPlayer){ ytPlayer.loadVideoById(videoId); return; }
-  ytPlayer = new YT.Player('hiddenYTPlayer',{
-    height:'0',width:'0',videoId:videoId,
-    playerVars:{autoplay:1,controls:0,disablekb:1,modestbranding:1,rel:0},
-    events:{onReady:(e)=> e.target.playVideo()}
-  });
-}
 
 function switchMode(){
   mode = document.getElementById("modeSelect").value;
@@ -416,5 +397,6 @@ switchMode();
 </script>
 </body>
 </html>
+
 
 
