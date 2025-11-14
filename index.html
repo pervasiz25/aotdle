@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Attack on Titandle – LoLdle (Themed)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Attack on Titandle – LoLdle (Themed + OST)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg-dark:#0b0b0b;
@@ -16,7 +17,6 @@
   --red:#d22;
 }
 
-/* Basic layout */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
@@ -34,8 +34,7 @@ body{
 .card{
   width:100%;
   max-width:980px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
@@ -47,8 +46,7 @@ header.top{
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background:
-    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
 
@@ -123,22 +121,8 @@ main.content{
 .quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
 .quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
 
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#333;
-  color:#fff;
-  padding:12px 20px;
-  border-radius:8px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.6);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 0.25s ease;
-  z-index:9999;
-}
-.toast.show{ opacity:1; pointer-events:auto; }
+@keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
+.quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
 
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
@@ -190,17 +174,21 @@ td.char-cell img:hover{ transform: scale(1.06) }
   vertical-align:top;
 }
 
-/* OST container; we use display:block/none to switch modes (requested).
-   The iframe that actually loads Apple Music is hidden (tiny + offscreen) so user can't see metadata. */
-#ostContainer { display:none; margin-top:12px; text-align:center; }
-.hidden-apple { width:1px; height:1px; opacity:0; position:absolute; left:-9999px; top:-9999px; border:0; }
+#toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: 0.3s;
+}
 
-/* small responsive tweaks */
-@media (max-width:980px){
-  td.char-cell img{ width:60px;height:60px; }
-  .table-wrap{ max-height:360px; }
-  input#guessInput{ width:160px; }
-  .quote-img{ width:60px;height:60px; }
+#hiddenYTPlayer {
+  position:absolute; left:-99999px; top:-99999px;
 }
 </style>
 </head>
@@ -230,7 +218,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
     <section class="panel">
       <div id="quoteBox" class="quote-box"></div>
 
-      <div class="table-wrap" id="charContainer">
+      <div class="table-wrap">
         <table class="char-table" id="charTable" aria-live="polite">
           <thead>
             <tr>
@@ -240,62 +228,32 @@ td.char-cell img:hover{ transform: scale(1.06) }
             </tr>
           </thead>
           <tbody>
-            <!-- guesses appended here -->
+            <!-- guesses append here -->
           </tbody>
         </table>
       </div>
 
-      <!-- OST container -->
-      <div id="ostContainer">
-        <div style="margin-bottom:8px;">
-          <input id="ostGuessInput" placeholder="Enter OST name..." style="padding:8px 10px; width:260px;" />
-          <button class="guess" onclick="makeOSTGuess()">Guess OST</button>
-        </div>
-
-        <!-- hidden Apple Music iframe (loads only after correct guess) -->
-        <iframe id="appleIframe" class="hidden-apple" src=""
-          allow="autoplay *; encrypted-media *;"
-          sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"></iframe>
-
+      <div id="ostContainer" style="display:none; margin-top:12px;">
+        <input id="ostGuessInput" placeholder="Enter OST name..." />
+        <button class="guess" onclick="makeOSTGuess()">Guess</button>
       </div>
     </section>
   </main>
 </div>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="toast"></div>
+<div id="hiddenYTPlayer"></div>
 
+<script src="characters.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-/* ---------------------------
-   Characters data
-   (inlined to keep single-file)
-   --------------------------- */
-const characters = [
-  { name: "Eren Yeager", gender: "Male", origin: "Paradis", group: "Survey Corps", type: "Titan Shifter", first_arc: "The Fall of Shiganshina", rank: "Former Cadet", age: 19, death_episode: "S4E19", quote: "If you win, you live. If you lose, you die. If you don’t fight, you can’t win!" },
-  { name: "Mikasa Ackerman", gender: "Female", origin: "Paradis", group: "Survey Corps", type: "Human", first_arc: "The Fall of Shiganshina", rank: "Soldier", age: 19, death_episode: "Alive", quote: "This world is cruel... but it’s also very beautiful." },
-  { name: "Armin Arlert", gender: "Male", origin: "Paradis", group: "Survey Corps", type: "Titan Shifter", first_arc: "The Fall of Shiganshina", rank: "Commander", age: 19, death_episode: "Alive", quote: "When I’m faced with a choice, I always wonder… what kind of person do I want to become?" },
-  { name: "Levi Ackerman", gender: "Male", origin: "Paradis", group: "Survey Corps", type: "Human", first_arc: "The Female Titan Arc", rank: "Captain", age: 30, death_episode: "Alive", quote: "The only thing we’re allowed to do is believe that we won’t regret the choice we made." },
-  { name: "Hange Zoe", gender: "Female", origin: "Paradis", group: "Survey Corps", type: "Human", first_arc: "The Female Titan Arc", rank: "Commander", age: 34, death_episode: "S4E21", quote: "Titans are wonderful! They’re so fascinating!" },
-  { name: "Reiner Braun", gender: "Male", origin: "Marley", group: "Warrior Unit", type: "Titan Shifter", first_arc: "The 57th Exterior Scouting Mission", rank: "Warrior", age: 21, death_episode: "Alive", quote: "I’m the Armored Titan." },
-  { name: "Annie Leonhart", gender: "Female", origin: "Marley", group: "Warrior Unit", type: "Titan Shifter", first_arc: "The 57th Exterior Scouting Mission", rank: "Warrior", age: 20, death_episode: "Alive", quote: "You’re weak because you’re strong." },
-  { name: "Bertholdt Hoover", gender: "Male", origin: "Marley", group: "Warrior Unit", type: "Titan Shifter", first_arc: "The 57th Exterior Scouting Mission", rank: "Warrior", age: 21, death_episode: "S3E17", quote: "It’s us who started this story." },
-  { name: "Jean Kirstein", gender: "Male", origin: "Paradis", group: "Survey Corps", type: "Human", first_arc: "The Fall of Shiganshina", rank: "Soldier", age: 20, death_episode: "Alive", quote: "I don’t have time to worry if it’s right or wrong, you can’t hope for a horror story with a happy ending!" },
-  { name: "Sasha Blouse", gender: "Female", origin: "Paradis", group: "Survey Corps", type: "Human", first_arc: "The Fall of Shiganshina", rank: "Soldier", age: 20, death_episode: "S4E8", quote: "Meat… finally!" }
-];
-
-/* ---------------------------
-   UI and state
-   --------------------------- */
 const datalist = document.getElementById("chars");
 if(Array.isArray(characters)){
-  characters.forEach(c=>{
+  characters.forEach(c => {
     const option = document.createElement("option");
     option.value = c.name;
     datalist.appendChild(option);
   });
-}
-
-function normalizeName(name){
-  return name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
 }
 
 let secretQuote = characters[Math.floor(Math.random() * characters.length)];
@@ -304,166 +262,159 @@ let secretChar = characters[Math.floor(Math.random() * characters.length)];
 const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
 const ostContainer = document.getElementById("ostContainer");
-const appleIframe = document.getElementById("appleIframe");
+const ostGuessInput = document.getElementById("ostGuessInput");
 const toast = document.getElementById("toast");
+const hiddenYTPlayerDiv = document.getElementById("hiddenYTPlayer");
 
 let mode = "classic";
 let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-/* Color logic */
+const ostList = [
+  { name:"Vogel im Käfig", id:"9ZyL1O_z7wM" },
+  { name:"Call Your Name", id:"HVAgYp3GsjA" },
+  { name:"YouSeeBIGGIRL", id:"AQ2K7kY_Iec" },
+  { name:"ətˈæk 0N tάɪtn", id:"-rQmYaQjF7E" }
+];
+let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
+let ytPlayer;
+
+function onYouTubeIframeAPIReady(){ }
+
+function playHiddenYouTube(videoId){
+  if(ytPlayer){ ytPlayer.loadVideoById(videoId); return; }
+  ytPlayer = new YT.Player('hiddenYTPlayer',{
+    height:'0',width:'0',videoId:videoId,
+    playerVars:{autoplay:1,controls:0,disablekb:1,modestbranding:1,rel:0},
+    events:{onReady:(e)=> e.target.playVideo()}
+  });
+}
+
+function switchMode(){
+  mode = document.getElementById("modeSelect").value;
+  document.getElementById("guessInput").value="";
+
+  quoteBox.style.display = "none";
+  charTable.parentElement.parentElement.style.display = "none";
+  ostContainer.style.display = "none";
+
+  if(mode==="quote"){
+    quoteBox.style.display="block";
+    quoteBox.textContent = `"${secretQuote.quote}"`;
+  } else if(mode==="ost"){
+    ostContainer.style.display = "block";
+  } else {
+    charTable.parentElement.parentElement.style.display = 'table';
+  }
+}
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.style.opacity = 1;
+  setTimeout(()=>{ toast.style.opacity = 0; }, 1800);
+}
+
 function colorCell(guessVal, secretVal){
   if(guessVal === secretVal) return "green";
   if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
   return "red";
 }
 
-/* Toast */
-let toastTimer = null;
-function showToast(msg){
-  clearTimeout(toastTimer);
-  toast.textContent = msg;
-  toast.classList.add("show");
-  toastTimer = setTimeout(()=>{ toast.classList.remove("show"); }, 1500);
-}
-
-/* ---------------------------
-   Apple Music OST list (embed URLs)
-   Replace these sample URLs with actual track embed URLs from Apple Music if you want.
-   Example embed URL format:
-   https://embed.music.apple.com/<country>/album/<album-name-or-id>/track-id?i=<track-id>
-   --------------------------- */
-const ostList = [
-  { name: "Vogel im Käfig", url: "<iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="175" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/sg/song/vogel-im-k%C3%A4fig/661050326"></iframe>" },
-  { name: "Call Your Name", url: "<iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="175" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/sg/song/call-your-name/661050335"></iframe>" }
-];
-
-let currentOST = ostList[Math.floor(Math.random() * ostList.length)];
-
-/* ---------------------------
-   Mode switching (use display block/none as requested)
-   --------------------------- */
-function switchMode(){
-  mode = document.getElementById("modeSelect").value;
-  document.getElementById("guessInput").value = "";
-
-  // hide all main sections
-  document.getElementById("charContainer").style.display = "none";
-  quoteBox.style.display = "none";
-  ostContainer.style.display = "none";
-
-  if(mode === "quote"){
-    quoteBox.style.display = "block";
-    quoteBox.textContent = `"${secretQuote.quote}"`;
-  } else if(mode === "ost"){
-    ostContainer.style.display = "block";
-    // keep iframe unloaded until correct guess for privacy
-    appleIframe.src = "";
-  } else {
-    document.getElementById("charContainer").style.display = "block";
-  }
-}
-
-/* ---------------------------
-   Make a character / quote guess
-   --------------------------- */
 function makeGuess(){
   const guessName = document.getElementById("guessInput").value.trim();
   if(!guessName) return;
 
   if(mode === "quote"){
-    if(guessedQuotes.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
+    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedQuotes.add(guessName.toLowerCase());
 
     const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
     quoteBox.classList.remove("green","red","pop");
     void quoteBox.offsetWidth;
-    if(isCorrect){
-      quoteBox.classList.add("green","pop");
-      showToast("Correct!");
-    } else {
-      quoteBox.classList.add("red");
-      showToast("Wrong!");
-      setTimeout(()=>quoteBox.classList.remove("red"),1000);
-    }
+    if(isCorrect){ quoteBox.classList.add("green","pop"); }
+    else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
 
-    // show small image of guess if image exists
     const img = document.createElement("img");
-    img.src = `images/${normalizeName(guessName)}.png`;
-    img.alt = guessName;
-    img.className = "quote-img";
-    img.onerror = ()=>img.style.display = 'none';
-    quoteBox.appendChild(img);
+    img.src=`images/${guessName.toLowerCase()}.png`;
+    img.alt=guessName;
+    img.className="quote-img";
+    img.onerror=()=>{img.style.display='none'};
 
-  } else if(mode === "classic"){
-    if(charSolved){ showToast("Character already solved!"); document.getElementById("guessInput").value=""; return; }
-    if(guessedChars.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
+    let container = document.getElementById("quoteContainer");
+    if(!container){
+      container = document.createElement("div");
+      container.id="quoteContainer";
+      container.style.textAlign="left";
+      quoteBox.parentElement.appendChild(container);
+    }
+    container.appendChild(img);
+  } else if(mode==="classic"){
+    if(charSolved){ document.getElementById("guessInput").value=""; return; }
+    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
 
-    const guess = characters.find(c => c.name.toLowerCase() === guessName.toLowerCase());
-    if(!guess){ showToast("Character not found!"); document.getElementById("guessInput").value=""; return; }
+    const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
+    if(!guess){ document.getElementById("guessInput").value=""; return; }
 
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
 
-    attrs.forEach((attr, index) => {
+    attrs.forEach((attr,index)=>{
       const cell = document.createElement("td");
-      if(attr === "name"){
+      if(attr==="name"){
         cell.classList.add("char-cell");
         const img = document.createElement("img");
-        img.alt = guess.name;
-        img.src = `images/${normalizeName(guess.name)}.png`;
-        img.onerror = ()=>img.style.display='none';
+        img.alt=guess.name;
+        img.src=`images/${guess.name.toLowerCase()}.png`;
+        img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
-      } else {
-        cell.textContent = guess[attr];
-        cell.style.opacity = 0;
+      } else if(attr==="first_arc"){
+        let arrow = ""; // placeholder
+        cell.textContent = guess[attr] + (arrow ? " " + arrow : "");
+        cell.style.opacity=0;
         setTimeout(()=>{
           const color = colorCell(guess[attr], secretChar[attr]);
           cell.className = color;
-          cell.style.opacity = 1;
-        }, index * 450);
+          cell.style.opacity=1;
+        }, index*600);
+      } else {
+        cell.textContent = guess[attr];
+        cell.style.opacity=0;
+        setTimeout(()=>{
+          const color = colorCell(guess[attr], secretChar[attr]);
+          cell.className = color;
+          cell.style.opacity=1;
+        }, index*600);
       }
       row.appendChild(cell);
     });
 
     charTable.appendChild(row);
 
-    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()){
-      charSolved = true;
-      showToast("Correct character!");
-    }
+    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
   }
 
-  document.getElementById("guessInput").value = "";
+  document.getElementById("guessInput").value="";
 }
 
-/* ---------------------------
-   OST guess: on correct -> load hidden Apple Music iframe (user will need to press play on embed)
-   Note: Apple Music embed does not autoplay in many browsers; loading it makes the player visible to the browser
-   and the user will be able to press Play. We keep iframe hidden so metadata isn't visible.
-   --------------------------- */
 function makeOSTGuess(){
-  const val = document.getElementById("ostGuessInput").value.trim();
+  const val = ostGuessInput.value.trim();
   if(!val) return;
 
   if(val.toLowerCase() === currentOST.name.toLowerCase()){
-    showToast("Correct OST — loading player...");
-    // load Apple Music embed into tiny hidden iframe:
-    appleIframe.src = currentOST.url;
-    // Slight UX change: enable small visible play hint (we keep iframe hidden per request)
-    // If you want the user to press Play inside the embed, you can reveal iframe slightly:
-    // appleIframe.style.width = "300px"; appleIframe.style.height = "60px"; appleIframe.style.left='auto'; appleIframe.style.top='auto';
+    showToast("Doğru! Şarkı çalıyor...");
+    playHiddenYouTube(currentOST.id);
   } else {
-    showToast("Wrong OST!");
+    showToast("Yanlış tahmin!");
   }
-  document.getElementById("ostGuessInput").value = "";
+
+  ostGuessInput.value="";
 }
 
-/* initialize */
 switchMode();
 </script>
 </body>
 </html>
+
 
