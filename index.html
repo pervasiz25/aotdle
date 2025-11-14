@@ -120,13 +120,30 @@ main.content{
   font-style:italic;
   display:none;
   box-shadow: 0 6px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  text-align:center;
 }
 .quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
-.quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; transform-origin:center; }
+.quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
 
 @keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
 .quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#333;
+  color:#fff;
+  padding:12px 20px;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.6);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease;
+  z-index:9999;
+}
+
+.toast.show{opacity:1; pointer-events:auto;}
 
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
@@ -175,9 +192,21 @@ td.char-cell img:hover{ transform: scale(1.06) }
   border:3px solid #fff;
   display:inline-block;
   margin:6px;
-  transition: transform .2s ease;
+  vertical-align:top;
 }
-.quote-img.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
+
+#ostPlayer {
+  display:none;
+  margin: 14px auto;
+  width:100%;
+  max-width:500px;
+}
+
+#ostGuessContainer {
+  display:none;
+  margin-top:8px;
+  text-align:center;
+}
 
 @media (max-width:980px){
   td.char-cell img{ width:60px;height:60px; }
@@ -185,7 +214,6 @@ td.char-cell img:hover{ transform: scale(1.06) }
   input#guessInput{ width:160px; }
   .quote-img{ width:60px;height:60px; }
 }
-.ost-player{ width:100%; margin:14px 0; display:block; }
 </style>
 </head>
 <body>
@@ -211,11 +239,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
   </header>
 
   <main class="content">
-    <section class="panel">
-      <div id="quoteBox" class="quote-box"></div>
-
-      <div id="quoteImages" style="text-align:center;"></div>
-
+    <section class="panel" id="charContainer">
       <div class="table-wrap">
         <table class="char-table" id="charTable" aria-live="polite">
           <thead>
@@ -226,72 +250,104 @@ td.char-cell img:hover{ transform: scale(1.06) }
             </tr>
           </thead>
           <tbody>
-            <!-- guesses append here -->
           </tbody>
         </table>
       </div>
+    </section>
 
-      <div id="ostContainer" style="display:none;">
-        <audio class="ost-player" id="ostPlayer" controls></audio>
+    <section class="panel" id="quoteContainer" style="display:none;">
+      <div id="quoteBox" class="quote-box"></div>
+    </section>
+
+    <section class="panel" id="ostContainer" style="display:none;">
+      <div id="ostPlayer">
+        <iframe allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:500px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" src="" ></iframe>
+      </div>
+      <div id="ostGuessContainer">
+        <input id="ostGuessInput" placeholder="Enter OST name..." />
+        <button class="guess" onclick="makeOSTGuess()">Guess</button>
       </div>
     </section>
   </main>
 </div>
 
-<script src="characters.js"></script>
+<div id="toast" class="toast"></div>
+
 <script>
+// Karakterler
+const characters = [
+  {name:"Eren Yeager",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Titan Shifter",first_arc:"The Fall of Shiganshina",rank:"Former Cadet",age:19,death_episode:"S4E19",quote:"If you win, you live. If you lose, you die. If you don’t fight, you can’t win!"},
+  {name:"Mikasa Ackerman",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:19,death_episode:"Alive",quote:"This world is cruel... but it’s also very beautiful."},
+  {name:"Armin Arlert",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Titan Shifter",first_arc:"The Fall of Shiganshina",rank:"Commander",age:19,death_episode:"Alive",quote:"When I’m faced with a choice, I always wonder… what kind of person do I want to become?"},
+  {name:"Levi Ackerman",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Female Titan Arc",rank:"Captain",age:30,death_episode:"Alive",quote:"The only thing we’re allowed to do is believe that we won’t regret the choice we made."},
+  {name:"Hange Zoe",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Female Titan Arc",rank:"Commander",age:34,death_episode:"S4E21",quote:"Titans are wonderful! They’re so fascinating!"},
+  {name:"Reiner Braun",gender:"Male",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:21,death_episode:"Alive",quote:"I’m the Armored Titan."},
+  {name:"Annie Leonhart",gender:"Female",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:20,death_episode:"Alive",quote:"You’re weak because you’re strong."},
+  {name:"Bertholdt Hoover",gender:"Male",origin:"Marley",group:"Warrior Unit",type:"Titan Shifter",first_arc:"The 57th Exterior Scouting Mission",rank:"Warrior",age:21,death_episode:"S3E17",quote:"It’s us who started this story."},
+  {name:"Jean Kirstein",gender:"Male",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:20,death_episode:"Alive",quote:"I don’t have time to worry if it’s right or wrong, you can’t hope for a horror story with a happy ending!"},
+  {name:"Sasha Blouse",gender:"Female",origin:"Paradis",group:"Survey Corps",type:"Human",first_arc:"The Fall of Shiganshina",rank:"Soldier",age:20,death_episode:"S4E8",quote:"Meat… finally!"}
+];
+
 const datalist = document.getElementById("chars");
-if(Array.isArray(characters)){
-  characters.forEach(c => {
-    const option = document.createElement("option");
-    option.value = c.name;
-    datalist.appendChild(option);
-  });
+characters.forEach(c=>{
+  const option = document.createElement("option");
+  option.value = c.name;
+  datalist.appendChild(option);
+});
+
+function normalizeName(name){
+  return name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
 }
 
-let secretQuote = characters[Math.floor(Math.random() * characters.length)];
-let secretChar = characters[Math.floor(Math.random() * characters.length)];
+let secretQuote = characters[Math.floor(Math.random()*characters.length)];
+let secretChar = characters[Math.floor(Math.random()*characters.length)];
 
 const quoteBox = document.getElementById("quoteBox");
-const quoteImages = document.getElementById("quoteImages");
 const charTable = document.getElementById("charTable").querySelector("tbody");
-const ostContainer = document.getElementById("ostContainer");
-const ostPlayer = document.getElementById("ostPlayer");
+
+const ostPlayerDiv = document.getElementById("ostPlayer");
+const ostIframe = ostPlayerDiv.querySelector("iframe");
+const ostGuessContainer = document.getElementById("ostGuessContainer");
+const ostGuessInput = document.getElementById("ostGuessInput");
 
 let mode = "classic";
 let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-let arcOrder = characters.map(c=>c.first_arc);
-function getArcArrow(arc){
-  const secretIdx = arcOrder.indexOf(secretChar.first_arc);
-  const guessIdx = arcOrder.indexOf(arc);
-  if(guessIdx < secretIdx) return "↑";
-  if(guessIdx > secretIdx) return "↓";
-  return "";
+// OST list
+const ostList = [
+  {name:"Vogel im Käfig", url:"https://music.apple.com/embed/album/1626489475"},
+  {name:"Call Your Name", url:"https://music.apple.com/embed/album/1626489476"},
+  {name:"Ritt der Aufklärung", url:"https://music.apple.com/embed/album/1626489477"}
+];
+
+let currentOST = ostList[Math.floor(Math.random()*ostList.length)];
+
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.textContent=msg;
+  toast.classList.add("show");
+  setTimeout(()=>{toast.classList.remove("show");},1500);
 }
 
 function switchMode(){
   mode = document.getElementById("modeSelect").value;
-  document.getElementById("guessInput").value = "";
-  quoteBox.classList.remove("green","red","pop");
-  charTable.parentElement.parentElement.style.display = 'table';
-  quoteImages.innerHTML="";
-  ostContainer.style.display="none";
-
-  if(mode === "quote"){
-    quoteBox.style.display="block";
+  document.getElementById("guessInput").value="";
+  
+  document.getElementById("charContainer").style.display = "none";
+  document.getElementById("quoteContainer").style.display = "none";
+  document.getElementById("ostContainer").style.display = "none";
+  
+  if(mode==="quote"){
+    document.getElementById("quoteContainer").style.display="block";
+    quoteBox.style.display = "block";
     quoteBox.textContent = `"${secretQuote.quote}"`;
-    charTable.parentElement.parentElement.style.display = 'none';
-  } else if(mode === "ost"){
-    ostContainer.style.display="block";
-    quoteBox.style.display="none";
-    charTable.parentElement.parentElement.style.display = 'none';
-    startRandomOST();
+  } else if(mode==="ost"){
+    document.getElementById("ostContainer").style.display="block";
+    ostIframe.src = currentOST.url;
   } else {
-    quoteBox.style.display="none";
-    charTable.parentElement.parentElement.style.display = 'table';
+    document.getElementById("charContainer").style.display="block";
   }
 }
 
@@ -305,30 +361,30 @@ function makeGuess(){
   const guessName = document.getElementById("guessInput").value.trim();
   if(!guessName) return;
 
-  if(mode === "quote"){
-    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+  if(mode==="quote"){
+    if(guessedQuotes.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
     guessedQuotes.add(guessName.toLowerCase());
 
     const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
     quoteBox.classList.remove("green","red","pop");
     void quoteBox.offsetWidth;
-    if(isCorrect){ quoteBox.classList.add("green","pop"); }
-    else{ quoteBox.classList.add("red","pop"); }
+    if(isCorrect){ quoteBox.classList.add("green","pop"); showToast("Correct!"); }
+    else{ quoteBox.classList.add("red"); showToast("Wrong!"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
 
     const img = document.createElement("img");
-    img.src=`images/${guessName.toLowerCase()}.png`;
+    img.src=`images/${normalizeName(guessName)}.png`;
     img.alt=guessName;
-    img.className="quote-img pop";
+    img.className="quote-img";
     img.onerror=()=>{img.style.display='none'};
-    quoteImages.appendChild(img);
 
-  } else if(mode === "classic"){
-    if(charSolved){ document.getElementById("guessInput").value=""; return; }
-    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+    quoteBox.appendChild(img);
+  } else if(mode==="classic"){
+    if(charSolved){ showToast("Character already solved!"); document.getElementById("guessInput").value=""; return; }
+    if(guessedChars.has(guessName.toLowerCase())){ showToast("Already guessed!"); document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
 
     const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
-    if(!guess){ document.getElementById("guessInput").value=""; return; }
+    if(!guess){ showToast("Character not found!"); document.getElementById("guessInput").value=""; return; }
 
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
@@ -339,61 +395,44 @@ function makeGuess(){
         cell.classList.add("char-cell");
         const img = document.createElement("img");
         img.alt=guess.name;
-        img.src=`images/${guess.name.toLowerCase()}.png`;
+        img.src=`images/${normalizeName(guess.name)}.png`;
         img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
       } else if(attr==="first_arc"){
-        let arrow = getArcArrow(guess[attr]);
-        cell.textContent = guess[attr] + (arrow ? " " + arrow : "");
-        cell.style.opacity=0;
+        cell.textContent = guess[attr];
         setTimeout(()=>{
           const color = colorCell(guess[attr], secretChar[attr]);
           cell.className = color;
-          cell.style.opacity=1;
         }, index*600);
       } else {
         cell.textContent = guess[attr];
-        cell.style.opacity=0;
         setTimeout(()=>{
           const color = colorCell(guess[attr], secretChar[attr]);
           cell.className = color;
-          cell.style.opacity=1;
         }, index*600);
       }
       row.appendChild(cell);
     });
 
     charTable.appendChild(row);
-
-    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
+    if(guess.name.toLowerCase()===secretChar.name.toLowerCase()){ charSolved=true; showToast("Correct character!"); }
   }
 
   document.getElementById("guessInput").value="";
 }
 
-const ostList = [
-  "ost/Vogel_im_Kafig.mp3",
-  "ost/The_Rumbling.mp3",
-  "ost/My_War.mp3",
-  "ost/Shinzou_wo_Sasageyo.mp3",
-  "ost/Guren_no_Yumiya.mp3",
-  "ost/Jiyuu_no_Tsubasa.mp3"
-];
-
-function startRandomOST(){
-  const randomIndex = Math.floor(Math.random() * ostList.length);
-  ostPlayer.src = ostList[randomIndex];
-  ostPlayer.play();
-  ostPlayer.controls = true;
-  ostPlayer.removeAttribute("preload");
+function makeOSTGuess(){
+  const val = ostGuessInput.value.trim();
+  if(!val) return;
+  if(val.toLowerCase() === currentOST.name.toLowerCase()){ showToast("Correct OST!"); } 
+  else { showToast("Wrong OST!"); }
+  ostGuessInput.value="";
 }
 
 switchMode();
 </script>
 </body>
 </html>
-
-
 
 
 
