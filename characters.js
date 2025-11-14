@@ -1,0 +1,122 @@
+const characters = [
+  {
+    name: "Eren Yeager",
+    gender: "Male",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Titan Shifter",
+    first_arc: "The Fall of Shiganshina",
+    rank: "Former Cadet",
+    age: 19,
+    death_episode: "S4E19",
+    quote: "If you win, you live. If you lose, you die. If you don’t fight, you can’t win!"
+  },
+  {
+    name: "Mikasa Ackerman",
+    gender: "Female",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Human",
+    first_arc: "The Fall of Shiganshina",
+    rank: "Soldier",
+    age: 19,
+    death_episode: "Alive",
+    quote: "This world is cruel... but it’s also very beautiful."
+  },
+  {
+    name: "Armin Arlert",
+    gender: "Male",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Titan Shifter",
+    first_arc: "The Fall of Shiganshina",
+    rank: "Commander",
+    age: 19,
+    death_episode: "Alive",
+    quote: "When I’m faced with a choice, I always wonder… what kind of person do I want to become?"
+  },
+  {
+    name: "Levi Ackerman",
+    gender: "Male",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Human",
+    first_arc: "The Female Titan Arc",
+    rank: "Captain",
+    age: 30,
+    death_episode: "Alive",
+    quote: "The only thing we’re allowed to do is believe that we won’t regret the choice we made."
+  },
+  {
+    name: "Hange Zoe",
+    gender: "Female",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Human",
+    first_arc: "The Female Titan Arc",
+    rank: "Commander",
+    age: 34,
+    death_episode: "S4E21",
+    quote: "Titans are wonderful! They’re so fascinating!"
+  },
+  {
+    name: "Reiner Braun",
+    gender: "Male",
+    origin: "Marley",
+    group: "Warrior Unit",
+    type: "Titan Shifter",
+    first_arc: "The 57th Exterior Scouting Mission",
+    rank: "Warrior",
+    age: 21,
+    death_episode: "Alive",
+    quote: "I’m the Armored Titan."
+  },
+  {
+    name: "Annie Leonhart",
+    gender: "Female",
+    origin: "Marley",
+    group: "Warrior Unit",
+    type: "Titan Shifter",
+    first_arc: "The 57th Exterior Scouting Mission",
+    rank: "Warrior",
+    age: 20,
+    death_episode: "Alive",
+    quote: "You’re weak because you’re strong."
+  },
+  {
+    name: "Bertholdt Hoover",
+    gender: "Male",
+    origin: "Marley",
+    group: "Warrior Unit",
+    type: "Titan Shifter",
+    first_arc: "The 57th Exterior Scouting Mission",
+    rank: "Warrior",
+    age: 21,
+    death_episode: "S3E17",
+    quote: "It’s us who started this story."
+  },
+  {
+    name: "Jean Kirstein",
+    gender: "Male",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Human",
+    first_arc: "The Fall of Shiganshina",
+    rank: "Soldier",
+    age: 20,
+    death_episode: "Alive",
+    quote: "I don’t have time to worry if it’s right or wrong, you can’t hope for a horror story with a happy ending!"
+  },
+  {
+    name: "Sasha Blouse",
+    gender: "Female",
+    origin: "Paradis",
+    group: "Survey Corps",
+    type: "Human",
+    first_arc: "The Fall of Shiganshina",
+    rank: "Soldier",
+    age: 20,
+    death_episode: "S4E8",
+    quote: "Meat… finally!"
+  }
+];
