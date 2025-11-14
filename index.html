@@ -17,15 +17,12 @@
   --red:#d22;
 }
 
-/* ===== BODY & BACKGROUND ===== */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
   background-size: cover;
   color: #eee;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
   display:flex;
   align-items:flex-start;
   justify-content:center;
@@ -35,8 +32,7 @@ body{
 .card{
   width:100%;
   max-width:980px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
@@ -48,8 +44,7 @@ header.top{
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background:
-    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
 
@@ -166,22 +161,29 @@ td.char-cell img{
 }
 td.char-cell img:hover{ transform: scale(1.06) }
 
-.quote-img{
-  width:90px;
+.ost-player{
+  width:100%;
   height:90px;
-  object-fit:cover;
+  margin:12px 0;
+}
+
+.ost-guess{
+  width:280px;
+  padding:8px;
   border-radius:8px;
-  border:3px solid #fff;
-  display:inline-block;
-  margin:6px;
-  vertical-align:top;
+  border:1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  color:#eee;
+  font-size:14px;
+  outline:none;
+  display:block;
 }
 
 @media (max-width:980px){
   td.char-cell img{ width:60px;height:60px; }
   .table-wrap{ max-height:360px; }
   input#guessInput{ width:160px; }
-  .quote-img{ width:60px;height:60px; }
+  .ost-guess{ width:160px; }
 }
 </style>
 </head>
@@ -197,6 +199,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
       <select id="modeSelect" onchange="switchMode()">
         <option value="classic">Character Mode</option>
         <option value="quote">Quote Mode</option>
+        <option value="ost">OST Mode</option>
       </select>
 
       <input id="guessInput" list="chars" placeholder="Enter a character name..." />
@@ -209,7 +212,10 @@ td.char-cell img:hover{ transform: scale(1.06) }
   <main class="content">
     <section class="panel">
       <div id="quoteBox" class="quote-box"></div>
-
+      <div id="ostBox" style="display:none;">
+        <iframe id="ostPlayer" class="ost-player" allow="autoplay" src="" frameborder="0"></iframe>
+        <input id="ostGuess" class="ost-guess" placeholder="Guess OST name..." />
+      </div>
       <div class="table-wrap">
         <table class="char-table" id="charTable" aria-live="polite">
           <thead>
@@ -219,9 +225,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
               <th>First Arc</th><th>Rank</th><th>Age</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- guesses append here -->
-          </tbody>
+          <tbody></tbody>
         </table>
       </div>
     </section>
@@ -239,132 +243,101 @@ if(Array.isArray(characters)){
   });
 }
 
-let secretQuote = characters[Math.floor(Math.random() * characters.length)];
-let secretChar = characters[Math.floor(Math.random() * characters.length)];
+let secretChar = characters[Math.floor(Math.random()*characters.length)];
+let secretQuote = characters[Math.floor(Math.random()*characters.length)];
 
-const quoteBox = document.getElementById("quoteBox");
 const charTable = document.getElementById("charTable").querySelector("tbody");
-let mode = "classic";
-let guessedChars = new Set();
-let guessedQuotes = new Set();
-let charSolved = false;
+const quoteBox = document.getElementById("quoteBox");
+const ostBox = document.getElementById("ostBox");
+const ostPlayer = document.getElementById("ostPlayer");
+const ostGuess = document.getElementById("ostGuess");
 
-// arc ordering map for arrows
-let arcOrder = characters.map(c=>c.first_arc);
-function getArcArrow(arc){
-  const secretIdx = arcOrder.indexOf(secretChar.first_arc);
-  const guessIdx = arcOrder.indexOf(arc);
-  if(guessIdx < secretIdx) return "↑";
-  if(guessIdx > secretIdx) return "↓";
-  return "";
-}
+let mode="classic";
+let guessedChars=new Set();
+let guessedQuotes=new Set();
+let charSolved=false;
+
+// OST list
+const osts = [
+  "https://embed.music.apple.com/us/album/vogel-im-kafig/1440512977?i=1440512983",
+  "https://embed.music.apple.com/us/album/the-rumbling/1440578123?i=1440578125",
+  "https://embed.music.apple.com/us/album/my-war/1440512991?i=1440512995",
+  "https://embed.music.apple.com/us/album/shinzou-wo-sasageyo/1440513001?i=1440513005",
+  "https://embed.music.apple.com/us/album/guren-no-yumiya/1440513011?i=1440513015",
+  "https://embed.music.apple.com/us/album/jiyuu-no-tsubasa/1440513021?i=1440513025"
+];
 
 function switchMode(){
-  mode = document.getElementById("modeSelect").value;
-  document.getElementById("guessInput").value = "";
-  if(mode === "quote"){
-    quoteBox.style.display = "block";
-    quoteBox.textContent = `"${secretQuote.quote}"`;
-    charTable.parentElement.parentElement.style.display = 'none';
-    // quote tahminleri sağa eklenecek
-    const container = document.createElement("div");
-    container.id="quoteContainer";
-    container.style.textAlign="left";
-    quoteBox.parentElement.appendChild(container);
-    Array.from(document.querySelectorAll(".quote-img")).forEach(img=>container.appendChild(img));
-  } else {
-    quoteBox.style.display = "none";
-    charTable.parentElement.parentElement.style.display = 'table';
-    const container = document.getElementById("quoteContainer");
-    if(container){ container.remove(); }
+  mode=document.getElementById("modeSelect").value;
+  document.getElementById("guessInput").value="";
+  ostGuess.value="";
+  quoteBox.style.display="none";
+  ostBox.style.display="none";
+  charTable.parentElement.parentElement.style.display='table';
+  if(mode==="quote"){
+    quoteBox.style.display="block";
+    charTable.parentElement.parentElement.style.display='none';
+    quoteBox.textContent=`"${secretQuote.quote}"`;
+  } else if(mode==="ost"){
+    ostBox.style.display="block";
+    charTable.parentElement.parentElement.style.display='none';
+    startRandomOST();
   }
 }
 
-function colorCell(guessVal, secretVal){
-  if(guessVal === secretVal) return "green";
-  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
-  return "red";
-}
-
 function makeGuess(){
-  const guessName = document.getElementById("guessInput").value.trim();
-  if(!guessName) return;
-
-  if(mode === "quote"){
-    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
-    guessedQuotes.add(guessName.toLowerCase());
-
-    const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
-    quoteBox.classList.remove("green","red","pop");
-    void quoteBox.offsetWidth;
-    if(isCorrect){ quoteBox.classList.add("green","pop"); }
-    else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
-
-    const img = document.createElement("img");
-    img.src=`images/${guessName.toLowerCase()}.png`;
-    img.alt=guessName;
-    img.className="quote-img";
-    img.onerror=()=>{img.style.display='none'};
-
-    let container = document.getElementById("quoteContainer");
-    if(!container){
-      container = document.createElement("div");
-      container.id="quoteContainer";
-      container.style.textAlign="left";
-      quoteBox.parentElement.appendChild(container);
-    }
-    container.appendChild(img); // sağa eklenecek
-  } else {
-    if(charSolved){ document.getElementById("guessInput").value=""; return; }
-    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+  const guessName=document.getElementById("guessInput").value.trim();
+  if(mode==="classic"){
+    if(charSolved || guessedChars.has(guessName.toLowerCase())){document.getElementById("guessInput").value=""; return;}
     guessedChars.add(guessName.toLowerCase());
-
-    const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
-    if(!guess){ document.getElementById("guessInput").value=""; return; }
-
-    const row = document.createElement("tr");
-    const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
-
-    attrs.forEach((attr,index)=>{
-      const cell = document.createElement("td");
+    const guess=characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
+    if(!guess){document.getElementById("guessInput").value=""; return;}
+    const row=document.createElement("tr");
+    ["name","gender","origin","group","type","first_arc","rank","age"].forEach((attr,index)=>{
+      const cell=document.createElement("td");
       if(attr==="name"){
         cell.classList.add("char-cell");
-        const img = document.createElement("img");
+        const img=document.createElement("img");
         img.alt=guess.name;
         img.src=`images/${guess.name.toLowerCase()}.png`;
         img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
-      } else if(attr==="first_arc"){
-        let arrow = getArcArrow(guess[attr]);
-        cell.textContent = guess[attr] + (arrow ? " " + arrow : "");
-        cell.style.opacity=0;
-        setTimeout(()=>{
-          const color = colorCell(guess[attr], secretChar[attr]);
-          cell.className = color;
-          cell.style.opacity=1;
-        }, index*600);
       } else {
-        cell.textContent = guess[attr];
-        cell.style.opacity=0;
-        setTimeout(()=>{
-          const color = colorCell(guess[attr], secretChar[attr]);
-          cell.className = color;
-          cell.style.opacity=1;
-        }, index*600);
+        cell.textContent=guess[attr];
       }
       row.appendChild(cell);
     });
-
-    charTable.appendChild(row); // artık en sona ekleniyor
-
-    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
+    charTable.appendChild(row);
+    if(guess.name.toLowerCase()===secretChar.name.toLowerCase()) charSolved=true;
+    document.getElementById("guessInput").value="";
+  } else if(mode==="quote"){
+    const guessVal=document.getElementById("guessInput").value.trim();
+    if(guessedQuotes.has(guessVal.toLowerCase())){ document.getElementById("guessInput").value=""; return;}
+    guessedQuotes.add(guessVal.toLowerCase());
+    const isCorrect=guessVal.toLowerCase()===secretQuote.name.toLowerCase();
+    quoteBox.classList.remove("green","red","pop");
+    void quoteBox.offsetWidth;
+    quoteBox.classList.add(isCorrect?"green pop":"red");
+    document.getElementById("guessInput").value="";
+  } else if(mode==="ost"){
+    const guessVal=ostGuess.value.trim().toLowerCase();
+    if(!guessVal) return;
+    const isCorrect=osts.some(url=>url.toLowerCase().includes(guessVal));
+    alert(isCorrect ? "Correct!" : "Wrong!");
+    ostGuess.value="";
   }
+}
 
-  document.getElementById("guessInput").value="";
+// OST helper
+let ostIndex = Math.floor(Math.random()*osts.length);
+function startRandomOST(){
+  ostIndex = Math.floor(Math.random()*osts.length);
+  ostPlayer.src=osts[ostIndex]+"&autoplay=true";
 }
 
 switchMode();
 </script>
 </body>
 </html>
+
 
