@@ -17,12 +17,15 @@
   --red:#d22;
 }
 
+/* ===== BODY & BACKGROUND ===== */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
   background-size: cover;
   color: #eee;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
   display:flex;
   align-items:flex-start;
   justify-content:center;
@@ -32,7 +35,8 @@ body{
 .card{
   width:100%;
   max-width:980px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
@@ -44,7 +48,8 @@ header.top{
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
 
@@ -93,7 +98,6 @@ main.content{
   display:flex;
   gap:18px;
   align-items:flex-start;
-  flex-direction:column;
 }
 
 .panel{
@@ -170,12 +174,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
   border:3px solid #fff;
   display:inline-block;
   margin:6px;
-}
-
-.ost-player{
-  width:100%;
-  max-width:720px;
-  margin:16px auto;
+  vertical-align:top;
 }
 
 @media (max-width:980px){
@@ -197,7 +196,7 @@ td.char-cell img:hover{ transform: scale(1.06) }
     <div class="controls">
       <select id="modeSelect" onchange="switchMode()">
         <option value="classic">Character Mode</option>
-        <option value="ost">OST Mode</option>
+        <option value="quote">Quote Mode</option>
       </select>
 
       <input id="guessInput" list="chars" placeholder="Enter a character name..." />
@@ -208,28 +207,24 @@ td.char-cell img:hover{ transform: scale(1.06) }
   </header>
 
   <main class="content">
-    <!-- OST player -->
-    <div id="ostContainer" class="ost-player" style="display:none;">
-      <iframe id="ostPlayer" allow="autoplay *; encrypted-media *;" frameborder="0" height="150" style="width:100%;max-width:720px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"></iframe>
-    </div>
+    <section class="panel">
+      <div id="quoteBox" class="quote-box"></div>
 
-    <!-- Guess box -->
-    <div id="quoteBox" class="quote-box"></div>
-
-    <div class="table-wrap">
-      <table class="char-table" id="charTable" aria-live="polite">
-        <thead>
-          <tr>
-            <th class="char-head">Character</th>
-            <th>Gender</th><th>Origin</th><th>Group</th><th>Type</th>
-            <th>First Arc</th><th>Rank</th><th>Age</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- guesses append here -->
-        </tbody>
-      </table>
-    </div>
+      <div class="table-wrap">
+        <table class="char-table" id="charTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th class="char-head">Character</th>
+              <th>Gender</th><th>Origin</th><th>Group</th><th>Type</th>
+              <th>First Arc</th><th>Rank</th><th>Age</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- guesses append here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -244,27 +239,17 @@ if(Array.isArray(characters)){
   });
 }
 
+let secretQuote = characters[Math.floor(Math.random() * characters.length)];
+let secretChar = characters[Math.floor(Math.random() * characters.length)];
+
+const quoteBox = document.getElementById("quoteBox");
+const charTable = document.getElementById("charTable").querySelector("tbody");
 let mode = "classic";
 let guessedChars = new Set();
 let guessedQuotes = new Set();
 let charSolved = false;
 
-const osts = [
-  "https://embed.music.apple.com/tr/album/vogel-im-kafig/1234567890?i=1234567891",
-  "https://embed.music.apple.com/tr/album/the-rumbling/2345678901?i=2345678902",
-  "https://embed.music.apple.com/tr/album/my-war/3456789012?i=3456789013",
-  "https://embed.music.apple.com/tr/album/shinzou-wo-sasageyo/4567890123?i=4567890124",
-  "https://embed.music.apple.com/tr/album/guren-no-yumiya/5678901234?i=5678901235",
-  "https://embed.music.apple.com/tr/album/jiyuu-no-tsubasa/6789012345?i=6789012346"
-];
-
-const quoteBox = document.getElementById("quoteBox");
-const charTable = document.getElementById("charTable").querySelector("tbody");
-const ostContainer = document.getElementById("ostContainer");
-const ostPlayer = document.getElementById("ostPlayer");
-
-let secretChar = characters[Math.floor(Math.random() * characters.length)];
-let secretQuote = characters[Math.floor(Math.random() * characters.length)];
+// arc ordering map for arrows
 let arcOrder = characters.map(c=>c.first_arc);
 function getArcArrow(arc){
   const secretIdx = arcOrder.indexOf(secretChar.first_arc);
@@ -277,27 +262,35 @@ function getArcArrow(arc){
 function switchMode(){
   mode = document.getElementById("modeSelect").value;
   document.getElementById("guessInput").value = "";
-  charSolved=false;
-  quoteBox.classList.remove("green","red","pop");
-
-  if(mode === "ost"){
-    ostContainer.style.display="block";
-    charTable.parentElement.parentElement.style.display='none';
-    document.getElementById("guessInput").style.display="inline-block";
-    const randomOst = osts[Math.floor(Math.random()*osts.length)];
-    ostPlayer.src = randomOst+"&app=music&itsct=music_box&itscg=30200";
+  if(mode === "quote"){
+    quoteBox.style.display = "block";
+    quoteBox.textContent = `"${secretQuote.quote}"`;
+    charTable.parentElement.parentElement.style.display = 'none';
+    // quote tahminleri sağa eklenecek
+    const container = document.createElement("div");
+    container.id="quoteContainer";
+    container.style.textAlign="left";
+    quoteBox.parentElement.appendChild(container);
+    Array.from(document.querySelectorAll(".quote-img")).forEach(img=>container.appendChild(img));
   } else {
-    ostContainer.style.display="none";
-    charTable.parentElement.parentElement.style.display='table';
-    document.getElementById("guessInput").style.display="inline-block";
+    quoteBox.style.display = "none";
+    charTable.parentElement.parentElement.style.display = 'table';
+    const container = document.getElementById("quoteContainer");
+    if(container){ container.remove(); }
   }
+}
+
+function colorCell(guessVal, secretVal){
+  if(guessVal === secretVal) return "green";
+  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
+  return "red";
 }
 
 function makeGuess(){
   const guessName = document.getElementById("guessInput").value.trim();
   if(!guessName) return;
 
-  if(mode === "ost"){
+  if(mode === "quote"){
     if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedQuotes.add(guessName.toLowerCase());
 
@@ -306,8 +299,21 @@ function makeGuess(){
     void quoteBox.offsetWidth;
     if(isCorrect){ quoteBox.classList.add("green","pop"); }
     else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000); }
-    quoteBox.style.display="block";
-    quoteBox.textContent = guessName;
+
+    const img = document.createElement("img");
+    img.src=`images/${guessName.toLowerCase()}.png`;
+    img.alt=guessName;
+    img.className="quote-img";
+    img.onerror=()=>{img.style.display='none'};
+
+    let container = document.getElementById("quoteContainer");
+    if(!container){
+      container = document.createElement("div");
+      container.id="quoteContainer";
+      container.style.textAlign="left";
+      quoteBox.parentElement.appendChild(container);
+    }
+    container.appendChild(img); // sağa eklenecek
   } else {
     if(charSolved){ document.getElementById("guessInput").value=""; return; }
     if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
@@ -318,6 +324,7 @@ function makeGuess(){
 
     const row = document.createElement("tr");
     const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
+
     attrs.forEach((attr,index)=>{
       const cell = document.createElement("td");
       if(attr==="name"){
@@ -347,7 +354,8 @@ function makeGuess(){
       }
       row.appendChild(cell);
     });
-    charTable.insertBefore(row, charTable.firstChild);
+
+    charTable.appendChild(row); // artık en sona ekleniyor
 
     if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
   }
@@ -355,13 +363,8 @@ function makeGuess(){
   document.getElementById("guessInput").value="";
 }
 
-function colorCell(guessVal, secretVal){
-  if(guessVal === secretVal) return "green";
-  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
-  return "red";
-}
-
 switchMode();
 </script>
 </body>
 </html>
+
