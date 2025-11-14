@@ -161,7 +161,13 @@ td.char-cell img:hover{ transform: scale(1.06) }
   vertical-align:top;
 }
 
-#ostContainer { display:none; margin-top:8px; text-align:center; }
+#ostContainer {
+  opacity:0;
+  visibility:hidden;
+  margin-top:8px;
+  text-align:center;
+  transition: opacity 0.3s ease;
+}
 
 #ostContainer iframe{
   width:100%;
@@ -278,13 +284,15 @@ function switchMode(){
   
   document.getElementById("charContainer").style.display="none";
   document.getElementById("quoteBox").style.display="none";
-  ostContainer.style.display="none";
+  ostContainer.style.opacity=0;
+  ostContainer.style.visibility="hidden";
 
   if(mode==="quote"){
     document.getElementById("quoteBox").style.display="block";
     quoteBox.textContent = `"${secretQuote.quote}"`;
   } else if(mode==="ost"){
-    ostContainer.style.display="block";
+    ostContainer.style.visibility="visible";
+    ostContainer.style.opacity=1;
     ostIframe.src = currentOST.url;
   } else {
     document.getElementById("charContainer").style.display="block";
@@ -358,7 +366,6 @@ switchMode();
 </script>
 </body>
 </html>
-
 
 
 
