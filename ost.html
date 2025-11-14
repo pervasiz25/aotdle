@@ -1,34 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AOT OST Test – Apple Music Embed</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Attack on Titandle – LoLdle (Themed)</title>
+<style>
+:root{
+  --bg-dark:#0b0b0b;
+  --panel:#131313;
+  --accent:#b22;
+  --muted:#9aa0a6;
+  --green: #6aaa64;
+  --yellow:#c9b458;
+  --red:#d22;
+}
+html,body{height:100%;margin:0;}
+body{
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #eee;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  display:flex;
+  justify-content:center;
+  padding:28px;
+}
+.card{
+  width:100%; max-width:980px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.03);
+  overflow:hidden;
+  padding:20px;
+}
+.audio-player{
+  width:100%;
+  margin:20px 0;
+}
+</style>
 </head>
-<body style="background:#0b0b0b; color:white; display:flex; justify-content:center; align-items:center; height:100vh;">
+<body>
+<div class="card">
+  <h1 style="font-family:Cinzel,serif; font-size:24px; margin-bottom:12px;">OST Mode Test</h1>
 
-<div id="ostContainer" style="width:300px; height:380px;"></div>
+  <audio id="ostPlayer" class="audio-player" controls></audio>
+
+  <div>
+    <button onclick="makeGuess()">Tahmin Et</button>
+    <input id="guessInput" placeholder="Karakter adını yaz..." />
+  </div>
+</div>
 
 <script>
-const ostTracks = [
-  "https://music.apple.com/embed/album/1440857781?i=1440857890", // Örnek track
-  "https://music.apple.com/embed/album/1440857781?i=1440857900",
-  "https://music.apple.com/embed/album/1440857781?i=1440857910",
-  "https://music.apple.com/embed/album/1440857781?i=1440857920"
+const osts = [
+  "ost/Vogel_im_Kafig.mp3",
+  "ost/The_Rumbling.mp3",
+  "ost/My_War.mp3",
+  "ost/Shinzou_wo_Sasageyo.mp3",
+  "ost/Guren_no_Yumiya.mp3",
+  "ost/Jiyuu_no_Tsubasa.mp3"
 ];
 
-// Rastgele bir track seç
-const randomTrack = ostTracks[Math.floor(Math.random()*ostTracks.length)];
+let guessCount = 0;
+const playTimes = [2,4,6,10,15,20]; // saniye
+const player = document.getElementById("ostPlayer");
 
-const container = document.getElementById("ostContainer");
-container.innerHTML = `
-<iframe allow="autoplay *; encrypted-media *; fullscreen *" frameborder="0"
-height="380" style="width:100%;max-width:300px;overflow:hidden;background:transparent;"
-sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-src="${randomTrack}">
-</iframe>
-`;
+// Rastgele şarkı seç
+function pickRandomOST(){
+  const idx = Math.floor(Math.random()*osts.length);
+  player.src = osts[idx];
+  player.currentTime = Math.random() * Math.max(0, player.duration - 10);
+  player.play();
+}
+
+player.addEventListener('canplay', () => {
+  player.play();
+  hideDuration();
+});
+
+// Süreyi gizle
+function hideDuration(){
+  const style = document.createElement('style');
+  style.innerHTML = "audio::-webkit-media-controls-timeline, audio::-webkit-media-controls-current-time-display, audio::-webkit-media-controls-time-remaining-display { display:none !important; }";
+  document.head.appendChild(style);
+}
+
+// Tahmin yap (sadece demo, süreyi artırıyor)
+function makeGuess(){
+  if(guessCount >= playTimes.length) return;
+  player.currentTime = Math.random() * Math.max(0, player.duration - playTimes[guessCount]);
+  setTimeout(()=>{ player.pause(); }, playTimes[guessCount]*1000);
+  guessCount++;
+}
+
+// Sayfa yüklendiğinde otomatik seç
+window.addEventListener('load', pickRandomOST);
 </script>
-
 </body>
 </html>
