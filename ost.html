@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AOT OST Test – Apple Music Embed</title>
+</head>
+<body style="background:#0b0b0b; color:white; display:flex; justify-content:center; align-items:center; height:100vh;">
+
+<div id="ostContainer" style="width:300px; height:380px;"></div>
+
+<script>
+const ostTracks = [
+  "https://music.apple.com/embed/album/1440857781?i=1440857890", // Örnek track
+  "https://music.apple.com/embed/album/1440857781?i=1440857900",
+  "https://music.apple.com/embed/album/1440857781?i=1440857910",
+  "https://music.apple.com/embed/album/1440857781?i=1440857920"
+];
+
+// Rastgele bir track seç
+const randomTrack = ostTracks[Math.floor(Math.random()*ostTracks.length)];
+
+const container = document.getElementById("ostContainer");
+container.innerHTML = `
+<iframe allow="autoplay *; encrypted-media *; fullscreen *" frameborder="0"
+height="380" style="width:100%;max-width:300px;overflow:hidden;background:transparent;"
+sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+src="${randomTrack}">
+</iframe>
+`;
+</script>
+
+</body>
+</html>
