@@ -17,12 +17,15 @@
   --red:#d22;
 }
 
+/* ===== BODY & BACKGROUND ===== */
 html,body{height:100%;margin:0;}
 body{
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/wall-bg.png') no-repeat center center fixed;
   background-size: cover;
   color: #eee;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
   display:flex;
   align-items:flex-start;
   justify-content:center;
@@ -32,7 +35,8 @@ body{
 .card{
   width:100%;
   max-width:980px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
   border-radius:12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
   border:1px solid rgba(255,255,255,0.03);
@@ -44,7 +48,8 @@ header.top{
   gap:16px;
   align-items:center;
   padding:18px 22px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.25), rgba(0,0,0,0.12));
   border-bottom:1px solid rgba(255,255,255,0.02);
 }
 
@@ -77,7 +82,7 @@ select, input, button{
 }
 
 select{ min-width:150px; }
-input#guessInput, #ostGuess { width:280px; }
+input#guessInput { width:280px; }
 button.guess{
   background: linear-gradient(180deg, #b22, #8a1a1a);
   border: 1px solid rgba(255,255,255,0.06);
@@ -115,9 +120,13 @@ main.content{
   font-style:italic;
   display:none;
   box-shadow: 0 6px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  text-align:center;
 }
 .quote-box.green{ background: linear-gradient(180deg,#163b1f,#112d1a); border-left-color:var(--green); color:#eaf7ea; transform-origin:center; }
-.quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; }
+.quote-box.red{ background: linear-gradient(180deg,#3a0a0a,#260606); border-left-color:var(--red); color:#fff; transform-origin:center; }
+
+@keyframes popQuote { 0%{ transform: scale(.86); opacity:0.5 } 50%{ transform: scale(1.08); opacity:1 } 100%{ transform: scale(1); opacity:1 } }
+.quote-box.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
 
 .table-wrap{ overflow:auto; max-height:480px; padding:6px; }
 table.char-table{
@@ -158,29 +167,25 @@ td.char-cell img{
 }
 td.char-cell img:hover{ transform: scale(1.06) }
 
-.ost-player{
-  width:100%;
+.quote-img{
+  width:90px;
   height:90px;
-  margin:12px 0;
-}
-
-.ost-guess{
-  width:280px;
-  padding:8px;
+  object-fit:cover;
   border-radius:8px;
-  border:1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-  color:#eee;
-  font-size:14px;
-  outline:none;
-  display:block;
+  border:3px solid #fff;
+  display:inline-block;
+  margin:6px;
+  transition: transform .2s ease;
 }
+.quote-img.pop{ animation: popQuote .48s cubic-bezier(.2,.9,.3,1) forwards; }
 
 @media (max-width:980px){
   td.char-cell img{ width:60px;height:60px; }
   .table-wrap{ max-height:360px; }
-  input#guessInput, .ost-guess{ width:160px; }
+  input#guessInput{ width:160px; }
+  .quote-img{ width:60px;height:60px; }
 }
+.ost-player{ width:100%; margin:14px 0; display:block; }
 </style>
 </head>
 <body>
@@ -208,10 +213,9 @@ td.char-cell img:hover{ transform: scale(1.06) }
   <main class="content">
     <section class="panel">
       <div id="quoteBox" class="quote-box"></div>
-      <div id="ostBox" style="display:none;">
-        <iframe id="ostPlayer" class="ost-player" allow="autoplay" src="" frameborder="0"></iframe>
-        <input id="ostGuess" class="ost-guess" placeholder="Guess OST name..." />
-      </div>
+
+      <div id="quoteImages" style="text-align:center;"></div>
+
       <div class="table-wrap">
         <table class="char-table" id="charTable" aria-live="polite">
           <thead>
@@ -221,8 +225,14 @@ td.char-cell img:hover{ transform: scale(1.06) }
               <th>First Arc</th><th>Rank</th><th>Age</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- guesses append here -->
+          </tbody>
         </table>
+      </div>
+
+      <div id="ostContainer" style="display:none;">
+        <audio class="ost-player" id="ostPlayer" controls></audio>
       </div>
     </section>
   </main>
@@ -239,102 +249,151 @@ if(Array.isArray(characters)){
   });
 }
 
-let secretChar = characters[Math.floor(Math.random()*characters.length)];
-let secretQuote = characters[Math.floor(Math.random()*characters.length)];
+let secretQuote = characters[Math.floor(Math.random() * characters.length)];
+let secretChar = characters[Math.floor(Math.random() * characters.length)];
 
-const charTable = document.getElementById("charTable").querySelector("tbody");
 const quoteBox = document.getElementById("quoteBox");
-const ostBox = document.getElementById("ostBox");
+const quoteImages = document.getElementById("quoteImages");
+const charTable = document.getElementById("charTable").querySelector("tbody");
+const ostContainer = document.getElementById("ostContainer");
 const ostPlayer = document.getElementById("ostPlayer");
-const ostGuess = document.getElementById("ostGuess");
 
-let mode="classic";
-let guessedChars=new Set();
-let guessedQuotes=new Set();
-let charSolved=false;
+let mode = "classic";
+let guessedChars = new Set();
+let guessedQuotes = new Set();
+let charSolved = false;
 
-// OST list
-const osts = [
-  "https://embed.music.apple.com/us/album/vogel-im-kafig/1440512977?i=1440512983",
-  "https://embed.music.apple.com/us/album/the-rumbling/1440578123?i=1440578125",
-  "https://embed.music.apple.com/us/album/my-war/1440512991?i=1440512995",
-  "https://embed.music.apple.com/us/album/shinzou-wo-sasageyo/1440513001?i=1440513005",
-  "https://embed.music.apple.com/us/album/guren-no-yumiya/1440513011?i=1440513015",
-  "https://embed.music.apple.com/us/album/jiyuu-no-tsubasa/1440513021?i=1440513025"
-];
+let arcOrder = characters.map(c=>c.first_arc);
+function getArcArrow(arc){
+  const secretIdx = arcOrder.indexOf(secretChar.first_arc);
+  const guessIdx = arcOrder.indexOf(arc);
+  if(guessIdx < secretIdx) return "↑";
+  if(guessIdx > secretIdx) return "↓";
+  return "";
+}
 
 function switchMode(){
-  mode=document.getElementById("modeSelect").value;
-  document.getElementById("guessInput").value="";
-  ostGuess.value="";
-  quoteBox.style.display="none";
-  ostBox.style.display="none";
-  charTable.parentElement.parentElement.style.display='table';
-  if(mode==="quote"){
+  mode = document.getElementById("modeSelect").value;
+  document.getElementById("guessInput").value = "";
+  quoteBox.classList.remove("green","red","pop");
+  charTable.parentElement.parentElement.style.display = 'table';
+  quoteImages.innerHTML="";
+  ostContainer.style.display="none";
+
+  if(mode === "quote"){
     quoteBox.style.display="block";
-    charTable.parentElement.parentElement.style.display='none';
-    quoteBox.textContent=`"${secretQuote.quote}"`;
-  } else if(mode==="ost"){
-    ostBox.style.display="block";
-    charTable.parentElement.parentElement.style.display='none';
+    quoteBox.textContent = `"${secretQuote.quote}"`;
+    charTable.parentElement.parentElement.style.display = 'none';
+  } else if(mode === "ost"){
+    ostContainer.style.display="block";
+    quoteBox.style.display="none";
+    charTable.parentElement.parentElement.style.display = 'none';
     startRandomOST();
+  } else {
+    quoteBox.style.display="none";
+    charTable.parentElement.parentElement.style.display = 'table';
   }
 }
 
+function colorCell(guessVal, secretVal){
+  if(guessVal === secretVal) return "green";
+  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
+  return "red";
+}
+
 function makeGuess(){
-  const guessName=document.getElementById("guessInput").value.trim();
-  if(mode==="classic"){
-    if(charSolved || guessedChars.has(guessName.toLowerCase())){document.getElementById("guessInput").value=""; return;}
+  const guessName = document.getElementById("guessInput").value.trim();
+  if(!guessName) return;
+
+  if(mode === "quote"){
+    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+    guessedQuotes.add(guessName.toLowerCase());
+
+    const isCorrect = guessName.toLowerCase() === secretQuote.name.toLowerCase();
+    quoteBox.classList.remove("green","red","pop");
+    void quoteBox.offsetWidth;
+    if(isCorrect){ quoteBox.classList.add("green","pop"); }
+    else{ quoteBox.classList.add("red","pop"); }
+
+    const img = document.createElement("img");
+    img.src=`images/${guessName.toLowerCase()}.png`;
+    img.alt=guessName;
+    img.className="quote-img pop";
+    img.onerror=()=>{img.style.display='none'};
+    quoteImages.appendChild(img);
+
+  } else if(mode === "classic"){
+    if(charSolved){ document.getElementById("guessInput").value=""; return; }
+    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
-    const guess=characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
-    if(!guess){document.getElementById("guessInput").value=""; return;}
-    const row=document.createElement("tr");
-    ["name","gender","origin","group","type","first_arc","rank","age"].forEach((attr,index)=>{
-      const cell=document.createElement("td");
+
+    const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
+    if(!guess){ document.getElementById("guessInput").value=""; return; }
+
+    const row = document.createElement("tr");
+    const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
+
+    attrs.forEach((attr,index)=>{
+      const cell = document.createElement("td");
       if(attr==="name"){
         cell.classList.add("char-cell");
-        const img=document.createElement("img");
+        const img = document.createElement("img");
         img.alt=guess.name;
         img.src=`images/${guess.name.toLowerCase()}.png`;
         img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
+      } else if(attr==="first_arc"){
+        let arrow = getArcArrow(guess[attr]);
+        cell.textContent = guess[attr] + (arrow ? " " + arrow : "");
+        cell.style.opacity=0;
+        setTimeout(()=>{
+          const color = colorCell(guess[attr], secretChar[attr]);
+          cell.className = color;
+          cell.style.opacity=1;
+        }, index*600);
       } else {
-        cell.textContent=guess[attr];
+        cell.textContent = guess[attr];
+        cell.style.opacity=0;
+        setTimeout(()=>{
+          const color = colorCell(guess[attr], secretChar[attr]);
+          cell.className = color;
+          cell.style.opacity=1;
+        }, index*600);
       }
       row.appendChild(cell);
     });
+
     charTable.appendChild(row);
-    if(guess.name.toLowerCase()===secretChar.name.toLowerCase()) charSolved=true;
-    document.getElementById("guessInput").value="";
-  } else if(mode==="quote"){
-    const guessVal=document.getElementById("guessInput").value.trim();
-    if(guessedQuotes.has(guessVal.toLowerCase())){ document.getElementById("guessInput").value=""; return;}
-    guessedQuotes.add(guessVal.toLowerCase());
-    const isCorrect=guessVal.toLowerCase()===secretQuote.name.toLowerCase();
-    quoteBox.classList.remove("green","red","pop");
-    void quoteBox.offsetWidth;
-    quoteBox.classList.add(isCorrect?"green pop":"red");
-    document.getElementById("guessInput").value="";
-  } else if(mode==="ost"){
-    const guessVal=ostGuess.value.trim().toLowerCase();
-    if(!guessVal) return;
-    const isCorrect=osts.some(url=>url.toLowerCase().includes(guessVal));
-    alert(isCorrect ? "Correct!" : "Wrong!");
-    ostGuess.value="";
+
+    if(guess.name.toLowerCase() === secretChar.name.toLowerCase()) charSolved = true;
   }
+
+  document.getElementById("guessInput").value="";
 }
 
-// OST helper
-let ostIndex = Math.floor(Math.random()*osts.length);
+const ostList = [
+  "ost/Vogel_im_Kafig.mp3",
+  "ost/The_Rumbling.mp3",
+  "ost/My_War.mp3",
+  "ost/Shinzou_wo_Sasageyo.mp3",
+  "ost/Guren_no_Yumiya.mp3",
+  "ost/Jiyuu_no_Tsubasa.mp3"
+];
+
 function startRandomOST(){
-  ostIndex = Math.floor(Math.random()*osts.length);
-  ostPlayer.src=osts[ostIndex]+"&autoplay=true";
+  const randomIndex = Math.floor(Math.random() * ostList.length);
+  ostPlayer.src = ostList[randomIndex];
+  ostPlayer.play();
+  ostPlayer.controls = true;
+  ostPlayer.removeAttribute("preload");
 }
 
 switchMode();
 </script>
 </body>
 </html>
+
+
 
 
 
