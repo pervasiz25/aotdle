@@ -23,6 +23,8 @@ body{
   background-size: cover;
   color: #eee;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
   display:flex;
   align-items:flex-start;
   justify-content:center;
@@ -161,29 +163,33 @@ td.char-cell img{
 }
 td.char-cell img:hover{ transform: scale(1.06) }
 
-.ost-player{
-  width:100%;
+.quote-img{
+  width:90px;
   height:90px;
-  margin:12px 0;
+  object-fit:cover;
+  border-radius:8px;
+  border:3px solid #fff;
+  display:inline-block;
+  margin:6px;
 }
 
-.ost-guess{
-  width:280px;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-  color:#eee;
-  font-size:14px;
-  outline:none;
+#ostPlayer{
+  width:100%;
+  height:80px;
   display:block;
+  margin-top:16px;
+}
+
+.ost-guess-container{
+  margin-top:10px;
 }
 
 @media (max-width:980px){
   td.char-cell img{ width:60px;height:60px; }
   .table-wrap{ max-height:360px; }
   input#guessInput{ width:160px; }
-  .ost-guess{ width:160px; }
+  .quote-img{ width:60px;height:60px; }
+  #ostPlayer{ height:60px; }
 }
 </style>
 </head>
@@ -211,11 +217,10 @@ td.char-cell img:hover{ transform: scale(1.06) }
 
   <main class="content">
     <section class="panel">
+      <!-- Quote Box -->
       <div id="quoteBox" class="quote-box"></div>
-      <div id="ostBox" style="display:none;">
-        <iframe id="ostPlayer" class="ost-player" allow="autoplay" src="" frameborder="0"></iframe>
-        <input id="ostGuess" class="ost-guess" placeholder="Guess OST name..." />
-      </div>
+
+      <!-- Character Table -->
       <div class="table-wrap">
         <table class="char-table" id="charTable" aria-live="polite">
           <thead>
@@ -225,8 +230,17 @@ td.char-cell img:hover{ transform: scale(1.06) }
               <th>First Arc</th><th>Rank</th><th>Age</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            <!-- guesses append here -->
+          </tbody>
         </table>
+      </div>
+
+      <!-- OST Player -->
+      <iframe id="ostPlayer" allow="autoplay *; encrypted-media *" frameborder="0"></iframe>
+      <div class="ost-guess-container">
+        <input id="ostGuess" placeholder="Guess the OST..." />
+        <button onclick="makeOstGuess()">Guess</button>
       </div>
     </section>
   </main>
@@ -243,96 +257,137 @@ if(Array.isArray(characters)){
   });
 }
 
-let secretChar = characters[Math.floor(Math.random()*characters.length)];
-let secretQuote = characters[Math.floor(Math.random()*characters.length)];
-
-const charTable = document.getElementById("charTable").querySelector("tbody");
-const quoteBox = document.getElementById("quoteBox");
-const ostBox = document.getElementById("ostBox");
-const ostPlayer = document.getElementById("ostPlayer");
-const ostGuess = document.getElementById("ostGuess");
-
-let mode="classic";
-let guessedChars=new Set();
-let guessedQuotes=new Set();
-let charSolved=false;
-
-// OST list
-const osts = [
-  "https://embed.music.apple.com/us/album/vogel-im-kafig/1440512977?i=1440512983",
-  "https://embed.music.apple.com/us/album/the-rumbling/1440578123?i=1440578125",
-  "https://embed.music.apple.com/us/album/my-war/1440512991?i=1440512995",
-  "https://embed.music.apple.com/us/album/shinzou-wo-sasageyo/1440513001?i=1440513005",
-  "https://embed.music.apple.com/us/album/guren-no-yumiya/1440513011?i=1440513015",
-  "https://embed.music.apple.com/us/album/jiyuu-no-tsubasa/1440513021?i=1440513025"
+let secretQuote = characters[Math.floor(Math.random() * characters.length)];
+let secretChar = characters[Math.floor(Math.random() * characters.length)];
+let secretOst = [
+  {name:"Vogel im Kafig", url:"https://music.apple.com/embed/track/123456789"},
+  {name:"The Rumbling", url:"https://music.apple.com/embed/track/987654321"},
+  {name:"My War", url:"https://music.apple.com/embed/track/111222333"},
+  {name:"Shinzou wo Sasageyo", url:"https://music.apple.com/embed/track/444555666"},
+  {name:"Guren no Yumiya", url:"https://music.apple.com/embed/track/777888999"},
+  {name:"Jiyuu no Tsubasa", url:"https://music.apple.com/embed/track/000111222"}
 ];
+let ostCurrent = secretOst[Math.floor(Math.random()*secretOst.length)];
+
+const quoteBox = document.getElementById("quoteBox");
+const charTable = document.getElementById("charTable").querySelector("tbody");
+const ostPlayer = document.getElementById("ostPlayer");
+let mode = "classic";
+let guessedChars = new Set();
+let guessedQuotes = new Set();
+let charSolved = false;
+
+let arcOrder = characters.map(c=>c.first_arc);
+function getArcArrow(arc){
+  const secretIdx = arcOrder.indexOf(secretChar.first_arc);
+  const guessIdx = arcOrder.indexOf(arc);
+  if(guessIdx < secretIdx) return "↑";
+  if(guessIdx > secretIdx) return "↓";
+  return "";
+}
 
 function switchMode(){
-  mode=document.getElementById("modeSelect").value;
+  mode = document.getElementById("modeSelect").value;
   document.getElementById("guessInput").value="";
-  ostGuess.value="";
-  quoteBox.style.display="none";
-  ostBox.style.display="none";
-  charTable.parentElement.parentElement.style.display='table';
-  if(mode==="quote"){
-    quoteBox.style.display="block";
-    charTable.parentElement.parentElement.style.display='none';
-    quoteBox.textContent=`"${secretQuote.quote}"`;
+  document.getElementById("ostGuess").value="";
+  // Hide all
+  charTable.parentElement.parentElement.style.display='none';
+  quoteBox.style.display='none';
+  ostPlayer.style.display='none';
+  document.querySelector(".ost-guess-container").style.display='none';
+
+  if(mode==="classic"){
+    charTable.parentElement.parentElement.style.display='table';
+    document.querySelector(".controls input#guessInput").style.display='inline-block';
+    document.querySelector(".controls button.guess").style.display='inline-block';
+  } else if(mode==="quote"){
+    quoteBox.style.display='block';
+    quoteBox.textContent = `"${secretQuote.quote}"`;
+    document.querySelector(".controls input#guessInput").style.display='inline-block';
+    document.querySelector(".controls button.guess").style.display='inline-block';
   } else if(mode==="ost"){
-    ostBox.style.display="block";
-    charTable.parentElement.parentElement.style.display='none';
-    startRandomOST();
+    ostPlayer.src = ostCurrent.url;
+    ostPlayer.style.display='block';
+    document.querySelector(".ost-guess-container").style.display='block';
+    document.querySelector(".controls input#guessInput").style.display='none';
+    document.querySelector(".controls button.guess").style.display='none';
   }
 }
 
+function colorCell(guessVal, secretVal){
+  if(guessVal === secretVal) return "green";
+  if(typeof guessVal === "number" && typeof secretVal === "number" && Math.abs(guessVal - secretVal) <= 2) return "yellow";
+  return "red";
+}
+
 function makeGuess(){
-  const guessName=document.getElementById("guessInput").value.trim();
-  if(mode==="classic"){
-    if(charSolved || guessedChars.has(guessName.toLowerCase())){document.getElementById("guessInput").value=""; return;}
+  if(mode==="ost") return;
+  const guessName = document.getElementById("guessInput").value.trim();
+  if(!guessName) return;
+
+  if(mode==="quote"){
+    if(guessedQuotes.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
+    guessedQuotes.add(guessName.toLowerCase());
+    const isCorrect = guessName.toLowerCase()===secretQuote.name.toLowerCase();
+    quoteBox.classList.remove("green","red","pop");
+    void quoteBox.offsetWidth;
+    if(isCorrect){ quoteBox.classList.add("green","pop"); }
+    else{ quoteBox.classList.add("red"); setTimeout(()=>quoteBox.classList.remove("red"),1000);}
+    document.getElementById("guessInput").value="";
+  } else if(mode==="classic"){
+    if(charSolved){ document.getElementById("guessInput").value=""; return; }
+    if(guessedChars.has(guessName.toLowerCase())){ document.getElementById("guessInput").value=""; return; }
     guessedChars.add(guessName.toLowerCase());
-    const guess=characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
-    if(!guess){document.getElementById("guessInput").value=""; return;}
-    const row=document.createElement("tr");
-    ["name","gender","origin","group","type","first_arc","rank","age"].forEach((attr,index)=>{
-      const cell=document.createElement("td");
+
+    const guess = characters.find(c=>c.name.toLowerCase()===guessName.toLowerCase());
+    if(!guess){ document.getElementById("guessInput").value=""; return; }
+
+    const row = document.createElement("tr");
+    const attrs = ["name","gender","origin","group","type","first_arc","rank","age"];
+    attrs.forEach((attr,index)=>{
+      const cell = document.createElement("td");
       if(attr==="name"){
         cell.classList.add("char-cell");
-        const img=document.createElement("img");
+        const img = document.createElement("img");
         img.alt=guess.name;
         img.src=`images/${guess.name.toLowerCase()}.png`;
         img.onerror=()=>{img.style.display='none'};
         cell.appendChild(img);
-      } else {
+      } else if(attr==="first_arc"){
+        let arrow = getArcArrow(guess[attr]);
+        cell.textContent = guess[attr]+(arrow? " "+arrow:"");
+        cell.style.opacity=0;
+        setTimeout(()=>{
+          const color=colorCell(guess[attr],secretChar[attr]);
+          cell.className=color;
+          cell.style.opacity=1;
+        },index*600);
+      } else{
         cell.textContent=guess[attr];
+        cell.style.opacity=0;
+        setTimeout(()=>{
+          const color=colorCell(guess[attr],secretChar[attr]);
+          cell.className=color;
+          cell.style.opacity=1;
+        },index*600);
       }
       row.appendChild(cell);
     });
     charTable.appendChild(row);
     if(guess.name.toLowerCase()===secretChar.name.toLowerCase()) charSolved=true;
     document.getElementById("guessInput").value="";
-  } else if(mode==="quote"){
-    const guessVal=document.getElementById("guessInput").value.trim();
-    if(guessedQuotes.has(guessVal.toLowerCase())){ document.getElementById("guessInput").value=""; return;}
-    guessedQuotes.add(guessVal.toLowerCase());
-    const isCorrect=guessVal.toLowerCase()===secretQuote.name.toLowerCase();
-    quoteBox.classList.remove("green","red","pop");
-    void quoteBox.offsetWidth;
-    quoteBox.classList.add(isCorrect?"green pop":"red");
-    document.getElementById("guessInput").value="";
-  } else if(mode==="ost"){
-    const guessVal=ostGuess.value.trim().toLowerCase();
-    if(!guessVal) return;
-    const isCorrect=osts.some(url=>url.toLowerCase().includes(guessVal));
-    alert(isCorrect ? "Correct!" : "Wrong!");
-    ostGuess.value="";
   }
 }
 
-// OST helper
-let ostIndex = Math.floor(Math.random()*osts.length);
-function startRandomOST(){
-  ostIndex = Math.floor(Math.random()*osts.length);
-  ostPlayer.src=osts[ostIndex]+"&autoplay=true";
+function makeOstGuess(){
+  const ostGuess = document.getElementById("ostGuess").value.trim();
+  if(!ostGuess) return;
+  if(ostGuess.toLowerCase()===ostCurrent.name.toLowerCase()){
+    alert("Correct!");
+  } else{
+    alert("Wrong!");
+  }
+  document.getElementById("ostGuess").value="";
 }
 
 switchMode();
